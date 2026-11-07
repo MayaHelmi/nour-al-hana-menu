@@ -1,0 +1,106 @@
+/* Design tokens — the original site's theme values (light only).
+   Every color in styles.css reads from these variables. */
+
+:root {
+  --pos-tile-border:oklch(60% .025 75);
+  --pos-control:oklch(25% .02 75/.14);
+  --radius:.625rem;
+  /* Type scale — standard sizes for small text, golden ratio (φ ≈ 1.618) for the big steps:
+     16px body → 26px section titles (16×φ) → 42px hero (26×φ). */
+  --fs-xs:.75rem;     /* 12px  badges, currency */
+  --fs-sm:.875rem;    /* 14px  secondary text, small buttons */
+  --fs-base:1rem;     /* 16px  body, item names, buttons */
+  --fs-lg:1.25rem;    /* 20px  prices, card titles */
+  --fs-xl:1.625rem;   /* 26px  section titles, offer prices (16 × φ) */
+  --fs-2xl:2.625rem;  /* 42px  hero title (26 × φ) */
+  --leading-body:1.618; /* golden-ratio line height for running text */
+  --leading-heading:1.2;
+  --tap-size:2.75rem;          /* 44px — minimum comfortable touch target (Apple / Google guidelines) */
+  --search-height:var(--tap-size);  /* 44px header search */
+  --card-gap:1rem;                  /* 16px between cards on phones */
+  --card-gap-lg:1.5rem;             /* 24px on tablet/desktop */
+  --page-bg:oklch(100% 0 0);        /* outer page: white */
+  --section-space:3rem;             /* 48px above and below the line between sections */
+  --hero-peek:0rem;                 /* hero fills the screen; the category tabs start below the fold */
+  --hero-height:calc(100svh - var(--safe-top) - var(--header-height) - var(--announce-height) - var(--hero-peek));
+  --hero-min-height:26.25rem;       /* 420px */
+  --hero-max-height:none;           /* no cap, so tabs stay hidden on tall screens too */
+  --hero-overlay:oklch(0% 0 0/.55);   /* dark layer over the video so hero text reads */
+  --hero-text:oklch(100% 0 0);
+  --hero-text-muted:oklch(100% 0 0/.85);
+  --cta-height:3rem;                   /* 48px — standard hero button height */
+  --announce-height:2.25rem;           /* 36px thin bar above the header */
+  --header-height:4.0625rem;   /* 65px fallback — updated live by app.js */
+  --nav-logo-size:var(--tap-size);  /* 44px — matches the search height */
+  --search-max-width:22.5rem;  /* 360px on tablet/desktop; full width on phones */
+  --background:oklch(99% .01 90);
+  --foreground:oklch(20% .04 60);
+  --card:oklch(100% 0 0);
+  --card-foreground:oklch(20% .04 60);
+  --popover:oklch(100% 0 0);
+  --popover-foreground:oklch(20% .04 60);
+  --primary:oklch(55% .19 55);
+  --primary-foreground:oklch(99% .01 90);
+  --secondary:oklch(35% .09 145);
+  --secondary-foreground:oklch(99% .01 90);
+  --muted:oklch(96.8% .007 247.896);
+  --muted-foreground:oklch(55.4% .046 257.417);
+  --accent:oklch(82% .17 82);
+  --accent-foreground:oklch(25% .05 60);
+  --destructive:oklch(57.7% .245 27.325);
+  --destructive-foreground:oklch(98.4% .003 247.858);
+  --border:oklch(92.9% .013 255.508);
+  --input:oklch(92.9% .013 255.508);
+  --ring:oklch(70.4% .04 256.788);
+  --chart-1:oklch(64.6% .222 41.116);
+  --chart-2:oklch(60% .118 184.704);
+  --chart-3:oklch(39.8% .07 227.392);
+  --chart-4:oklch(82.8% .189 84.429);
+  --chart-5:oklch(76.9% .188 70.08);
+  --sidebar:oklch(98.4% .003 247.858);
+  --sidebar-foreground:oklch(12.9% .042 264.695);
+  --sidebar-primary:oklch(20.8% .042 265.755);
+  --sidebar-primary-foreground:oklch(98.4% .003 247.858);
+  --sidebar-accent:oklch(96.8% .007 247.896);
+  --sidebar-accent-foreground:oklch(20.8% .042 265.755);
+  --sidebar-border:oklch(92.9% .013 255.508);
+  --sidebar-ring:oklch(70.4% .04 256.788);
+}
+
+:root{
+  --install-icon-size:4rem;      /* 64px app icon */
+  --install-padding:1.25rem;     /* 20px inside the install card */
+  --footer-map-icon:1.25rem;     /* 20px Google Maps pin, same as the other footer icons */
+}
+:root{
+  --page-end-space:2rem;         /* 32px under the share link */
+  --cart-fab-space:6rem;         /* 96px room for the floating cart button when it shows */
+}
+:root{
+  --closed-photo-height:9rem;    /* 144px food photo at the top of the closed popup */
+  --closed-logo-size:4.5rem;     /* 72px logo overlapping the photo */
+  --danger-text:var(--destructive);
+}
+:root{
+  --skeleton-base:oklch(94% .006 90);      /* placeholder grey */
+  --skeleton-shine:oklch(98% .004 90);     /* moving highlight */
+  --skeleton-speed:1.4s;
+}
+:root{
+  --whatsapp:#25D366;            /* WhatsApp brand green */
+}
+
+/* Layout grid — one container and one gutter for every block, so all edges line up */
+:root{
+  --container-max:64rem;         /* 1024px content column (header, tabs, menu, install card, footer) */
+  --gutter:1rem;                 /* 16px side space on phones */
+  /* Safe areas: space kept clear of the notch, rounded corners and home bar (0 on normal screens) */
+  --safe-top:env(safe-area-inset-top, 0px);
+  --safe-bottom:env(safe-area-inset-bottom, 0px);
+  --safe-left:env(safe-area-inset-left, 0px);
+  --safe-right:env(safe-area-inset-right, 0px);
+}
+@media (min-width:640px){ :root{ --gutter:1.5rem; } }   /* 24px on tablet/desktop */
+:root{
+  --section-start:1.5rem;        /* 24px from the category tabs to the first section */
+}

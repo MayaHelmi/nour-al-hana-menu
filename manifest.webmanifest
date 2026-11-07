@@ -1,0 +1,17 @@
+{
+  "name": "منيو بيتزا نور الهنا - Pizza Nour El Hana",
+  "short_name": "Pizza Nour El Hana",
+  "description": "منيو بيتزا نور الهنا الإلكتروني للطلب المباشر عبر واتساب",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fff7ed",
+  "theme_color": "#d97706",
+  "orientation": "portrait",
+  "scope": "./",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    { "src": "assets/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "assets/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

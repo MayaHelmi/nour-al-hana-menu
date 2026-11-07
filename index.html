@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>بيتزا نور الهنا - قائمة الطلب</title>
+  <meta name="author" content="Pizza Nour El Hana">
+  <meta name="theme-color" content="#d97706">
+  <meta name="description" content="قائمة بيتزا نور الهنا الرقمية - بيتزا، كالزوني، مناقيش، ومعجنات. اطلب مباشرة عبر واتساب.">
+  <meta property="og:title" content="بيتزا نور الهنا">
+  <meta property="og:description" content="اطلب البيتزا والمناقيش مباشرة عبر واتساب">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="منيو بيتزا نور الهنا | Pizza Nour El Hana">
+  <meta name="twitter:description" content="اطلب مباشرة عبر المنيو الإلكتروني واتساب.">
+  <link rel="icon" href="assets/icons/favicon.png" type="image/png">
+  <link rel="icon" href="assets/icons/icon-192x192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="assets/icons/icon-512x512.png" type="image/png" sizes="512x512">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" sizes="180x180">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Outfit:wght@400;600;700;900&display=swap">
+  <link rel="stylesheet" href="assets/tokens/tokens.css">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div id="progress" class="progress-bar" style="transform:scaleX(0)" aria-hidden="true"></div>
+
+  <div id="app" dir="rtl" class="min-h-screen bg-background">
+    <!-- Announcement bar: closed / busy / delivery notice -->
+    <div id="announce"></div>
+
+    <!-- Header (top of page, always visible): logo · search · language -->
+    <header id="site-header" class="site-header">
+      <div id="nav" class="page-container py-3"><div class="skel-header" aria-hidden="true"><div class="skel skel--logo"></div><div class="skel skel--search"></div><div class="skel skel--lang"></div></div></div>
+    </header>
+
+    <!-- Hero -->
+    <div class="hero">
+      <video src="assets/video/hero.mp4" autoplay muted loop playsinline class="absolute inset-0 h-full w-full object-cover"></video>
+      <div class="hero-scrim"></div>
+      <div id="hero-content" class="hero-content"></div>
+    </div>
+
+    <div id="brand" class="page-container text-center"></div>
+    <!-- Category tabs: just above the menu, stick under the header while scrolling -->
+    <div class="cat-nav">
+      <nav id="cat-nav" aria-label="أقسام المنيو" class="page-container py-2"><div class="skel-tabs" aria-hidden="true"><div class="skel skel--tab"></div><div class="skel skel--tab"></div><div class="skel skel--tab"></div><div class="skel skel--tab"></div></div></nav>
+    </div>
+    <main id="main" class="page-container" aria-busy="true">
+      <!-- Skeleton shown until the menu renders (replaced by app.js) -->
+      <div class="skel-section" aria-hidden="true"><div class="skel skel--title"></div><div class="item-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"><div class="skel-card"><div class="skel skel--img"></div><div class="skel-card__row"><div class="skel skel--line"></div><div class="skel skel--price"></div></div><div class="skel skel--btn"></div></div><div class="skel-card"><div class="skel skel--img"></div><div class="skel-card__row"><div class="skel skel--line"></div><div class="skel skel--price"></div></div><div class="skel skel--btn"></div></div><div class="skel-card"><div class="skel skel--img"></div><div class="skel-card__row"><div class="skel skel--line"></div><div class="skel skel--price"></div></div><div class="skel skel--btn"></div></div><div class="skel-card"><div class="skel skel--img"></div><div class="skel-card__row"><div class="skel skel--line"></div><div class="skel skel--price"></div></div><div class="skel skel--btn"></div></div></div></div>
+    </main>
+    <div id="install"></div>
+    <footer id="footer" class="site-footer page-container"></footer>
+    <div id="cart-fab"></div>
+  </div>
+
+  <div id="portal"></div>
+
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/menu-data.js"></script>
+  <script src="assets/js/icons.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
