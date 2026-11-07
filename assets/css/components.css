@@ -1,0 +1,381 @@
+/* =====================================================================
+   Components — the site's own pieces, built only from design tokens
+   (assets/tokens/tokens.css). Utility classes (spacing, flex, colours on
+   simple elements) come from tailwind.css; anything with its own look
+   lives here, grouped by where it appears on the page:
+
+    1. Page & layout grid     7. Offer cards
+    2. Status bar             8. Item cards
+    3. Header                 9. Install card
+    4. Category tabs         10. Footer
+    5. Hero                  11. Windows (popups)
+    6. Section titles        12. Floating cart button
+                             13. Loading skeleton
+                             14. Ordering closed (locked buttons)
+                             15. Touch sizes
+
+   Colour tints use color-mix() from the tokens; each one is preceded by the same colour
+   written out plainly, for older iPhones (iOS < 16.2) that don't support color-mix().
+   ===================================================================== */
+
+
+/* ---------- 1. Page & layout grid ---------- */
+body { line-height:var(--leading-body); }
+body, #app { background:var(--page-bg) !important; }
+/* Every block uses the same column and side space, so left and right edges line up down the page */
+.page-container {
+  width:100%; max-width:var(--container-max); margin-inline:auto;
+  padding-left:max(var(--gutter), var(--safe-left)); padding-right:max(var(--gutter), var(--safe-right));
+}
+/* Notch / status bar (installed app on iPhone): content starts below it, and a strip in the page colour covers it while scrolling */
+#app { padding-top:var(--safe-top); }
+body::before {
+  content:""; position:fixed; inset:0 0 auto; height:var(--safe-top);
+  background:var(--page-bg); z-index:var(--z-safe-strip); pointer-events:none;
+}
+.progress-bar { top:var(--safe-top); }
+#brand:empty { display:none; }   /* holds the optional menu-discount banner */
+#main { padding-top:var(--section-start); }
+/* Sections: same space between all of them, with a thin line in between */
+#main > * + * { margin-top:var(--section-space) !important; }
+#main > section + section { border-top:1px solid var(--border); padding-top:var(--section-space); }
+
+
+/* ---------- 2. Status bar (above the header): red = closed, gold = busy, green = delivery notice ---------- */
+.announce {
+  display:flex; align-items:center; justify-content:center; min-height:var(--announce-height);
+  padding:var(--space-1-5) max(var(--space-4), var(--safe-right)) var(--space-1-5) max(var(--space-4), var(--safe-left));
+  font-size:var(--fs-sm); font-weight:600; line-height:var(--leading-snug); text-align:center;
+}
+.announce--closed { background:var(--destructive); color:var(--destructive-foreground); }
+.announce--busy { background:var(--accent); color:var(--accent-foreground); }
+.announce--open { background:var(--secondary); color:var(--secondary-foreground); }
+
+
+/* ---------- 3. Header: logo at the start, then search, then the language switch ---------- */
+.site-header, .cat-nav {
+  width:100%; border-bottom:1px solid var(--border);
+  background:rgb(255 255 255 / 0.95); background:color-mix(in oklab, var(--page-bg) 95%, transparent);
+  backdrop-filter:blur(var(--blur-bar)); -webkit-backdrop-filter:blur(var(--blur-bar));
+}
+.site-header { position:sticky; top:var(--safe-top); z-index:var(--z-header); }
+.nav-top { display:flex; align-items:center; gap:var(--space-3); }
+.nav-brand {
+  display:flex; align-items:center; gap:var(--space-2-5); flex-shrink:0;
+  color:var(--secondary); text-decoration:none; border-radius:var(--radius-full);
+}
+/* The full logo on a transparent background, no circle frame: it's a tall chef-hat emblem,
+   so it needs room for the name to be readable */
+.nav-brand__logo { width:var(--nav-logo-size); height:var(--nav-logo-size); object-fit:contain; }
+.nav-search { position:relative; flex:1; min-width:0; }
+.nav-search input { height:var(--search-height); }
+.nav-lang {
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--space-1-5); flex-shrink:0;
+  height:var(--search-height); min-width:var(--search-height); padding-inline:var(--space-2-5);
+  border:0; border-radius:var(--radius); background:transparent; color:var(--foreground);
+  font-size:var(--fs-sm); font-weight:600; cursor:pointer; transition:background-color var(--duration-fast);
+}
+.nav-lang:hover { background:var(--muted); }
+.nav-lang:focus-visible { outline:2px solid var(--ring); outline-offset:2px; }
+.nav-lang__icon { width:var(--icon-md); height:var(--icon-md); }
+.nav-lang__full { display:none; }
+@media (min-width:640px) {
+  .nav-lang__full { display:inline; }
+  .nav-lang__short { display:none; }
+  .nav-search { flex:0 1 var(--search-max-width); margin-inline-start:auto; }
+}
+
+
+/* ---------- 4. Category tabs: stick right under the header ---------- */
+.cat-nav { position:sticky; top:calc(var(--safe-top) + var(--header-height)); z-index:var(--z-tabs); margin-top:0; }
+
+
+/* ---------- 5. Hero: video, dark layer, headline, two buttons ---------- */
+.hero {
+  position:relative; width:100%; overflow:hidden;
+  height:var(--hero-height); min-height:var(--hero-min-height); max-height:var(--hero-max-height);
+}
+.hero-scrim { position:absolute; inset:0; background:var(--hero-overlay); }
+.hero-content {
+  position:absolute; inset:0; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:var(--space-3); padding-block:0; text-align:center; color:var(--hero-text);
+  padding-left:max(var(--gutter), var(--safe-left)); padding-right:max(var(--gutter), var(--safe-right));
+}
+.hero-title {
+  margin:0; font-size:var(--fs-2xl); font-weight:900; line-height:var(--leading-heading);
+  text-wrap:balance; text-shadow:var(--text-shadow-hero);
+}
+.hero-subtitle { max-width:36rem; font-size:var(--fs-lg); color:var(--hero-text-muted); }
+.hero-actions { display:flex; flex-wrap:wrap; justify-content:center; gap:var(--space-3); margin-top:var(--space-4); }
+.hero-btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2);
+  height:var(--cta-height); padding-inline:var(--space-7); border-radius:var(--radius);
+  font-size:var(--fs-base); font-weight:700; text-decoration:none; cursor:pointer;
+  transition:background-color var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast);
+}
+.hero-btn:active { transform:scale(.98); }
+.hero-btn:focus-visible { outline:2px solid var(--hero-text); outline-offset:3px; }
+.hero-btn__icon { width:var(--icon-lg); height:var(--icon-lg); }
+.hero-btn--primary { border:0; background:var(--primary); color:var(--primary-foreground); }
+.hero-btn--primary:hover { background:rgb(161 57 0); background:color-mix(in oklab, var(--primary) 88%, black); }
+.hero-btn--secondary {
+  border:var(--border-strong) solid var(--hero-ghost-border); background:var(--hero-ghost-bg); color:var(--hero-text);
+  backdrop-filter:blur(var(--blur-ghost)); -webkit-backdrop-filter:blur(var(--blur-ghost));
+}
+.hero-btn--secondary:hover { background:var(--hero-ghost-bg-hover); }
+
+
+/* ---------- 6. Section titles: bold title, no bars or rules ---------- */
+.section-head { margin-bottom:var(--space-4); }
+.section-head__row { display:flex; align-items:center; gap:var(--space-2); }
+.section-head__title { margin:0; font-size:var(--fs-xl); font-weight:800; line-height:var(--leading-heading); color:var(--foreground); }
+.section-head__icon { width:var(--icon-xl); height:var(--icon-xl); flex-shrink:0; color:var(--primary); }
+
+
+/* ---------- 7. Offer cards: size → price → saving ribbon (corner) → action ---------- */
+.offer-grid { display:grid; grid-template-columns:1fr; gap:var(--card-gap); }
+.offer-card {
+  position:relative; overflow:hidden; display:flex; flex-direction:column; padding:var(--space-4);
+  border:1px solid var(--border); border-radius:var(--radius); background:var(--card); box-shadow:var(--shadow-card);
+}
+.offer-card__top { display:flex; align-items:center; justify-content:space-between; gap:var(--space-2); min-height:var(--space-6); }
+/* "3 بيتزا" and the size sit on one line */
+.offer-card__title {
+  display:flex; align-items:baseline; gap:var(--space-1-5); margin:0; white-space:nowrap;
+  font-size:var(--fs-lg); font-weight:700; color:var(--foreground);
+}
+.offer-card__count { font:inherit; color:inherit; }
+.offer-card__prices { display:flex; align-items:baseline; gap:var(--space-1-5); margin-top:var(--space-3); }
+.offer-card__price { font-size:var(--fs-xl); font-weight:800; line-height:1; color:var(--foreground); }
+.offer-card__cur { font-size:var(--fs-sm); font-weight:700; color:var(--foreground); }
+.offer-card__was { margin-inline-start:var(--space-1); font-size:var(--fs-sm); color:var(--muted-foreground); text-decoration:line-through; }
+.offer-card__btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2); margin-top:var(--space-4);
+  height:var(--tap-size); border:var(--border-strong) solid var(--primary); border-radius:var(--radius);
+  background:transparent; color:var(--primary); font:inherit; font-size:var(--fs-base); font-weight:700; cursor:pointer;
+  transition:background-color var(--duration-fast), color var(--duration-fast);
+}
+.offer-card__btn:hover { background:var(--primary); color:var(--primary-foreground); }
+.offer-card__btn:focus-visible { outline:2px solid var(--ring); outline-offset:2px; }
+.offer-card__btn-icon { width:var(--icon-md); height:var(--icon-md); }
+/* Saving as a diagonal corner ribbon (top-left in Arabic, top-right in English) */
+.offer-card__ribbon {
+  position:absolute; top:1.1rem; left:-2.6rem; width:var(--ribbon-width); padding:var(--space-1) 0;
+  transform:rotate(-35deg); background:var(--primary); color:var(--primary-foreground); box-shadow:var(--shadow-ribbon);
+  font-size:var(--fs-xs); font-weight:700; text-align:center; white-space:nowrap; pointer-events:none;
+}
+[dir="ltr"] .offer-card__ribbon { left:auto; right:-2.6rem; transform:rotate(35deg); }
+@media (min-width:640px) {
+  .offer-grid { grid-template-columns:repeat(3, minmax(0, 1fr)); gap:var(--card-gap-lg); }
+  .offer-card { padding:var(--space-5); }
+}
+
+
+/* ---------- 8. Item cards: photo → name (start) / price (end) → action ---------- */
+.item-grid { gap:var(--card-gap); }
+@media (min-width:640px) { .item-grid { gap:var(--card-gap-lg); } }
+.item-card {
+  display:flex; flex-direction:column; gap:var(--space-2-5); padding:var(--space-3); text-align:start;
+  border:1px solid var(--border); border-radius:var(--radius); background:var(--card); box-shadow:var(--shadow-card);
+}
+.item-card.is-in-cart { border-color:var(--primary); }
+/* Photo: shimmering placeholder until the image has loaded, then it fades in */
+.item-card__media { position:relative; border-radius:var(--radius-sm); }
+.item-card__img {
+  width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:var(--radius-sm); background:var(--muted);
+  opacity:0; transition:opacity var(--duration-base);
+}
+.item-card__img.is-loaded { opacity:1; }
+/* Badge on the photo's top corner at the end side (top-left in Arabic) */
+.item-card__badge {
+  position:absolute; top:var(--space-2); inset-inline-end:var(--space-2); display:flex;
+  border-radius:var(--radius-full); box-shadow:var(--shadow-badge);
+}
+/* Item without a photo yet: same shape, so the grid stays even */
+.item-photo-placeholder {
+  display:flex; align-items:center; justify-content:center; width:100%; aspect-ratio:1/1; flex-shrink:0;
+  border-radius:var(--radius-sm); background:var(--muted); color:var(--muted-foreground);
+}
+.item-photo-placeholder__icon { width:var(--icon-2xl); height:var(--icon-2xl); opacity:.6; }
+.item-card__body { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-2); min-width:0; }
+.item-card__name {
+  display:flex; align-items:center; flex-wrap:wrap; gap:var(--space-1-5); min-width:0;
+  font-size:var(--fs-base); font-weight:700; line-height:var(--leading-snug); color:var(--foreground);
+}
+.item-card__price { display:flex; align-items:baseline; gap:var(--space-1); flex-shrink:0; white-space:nowrap; }
+.item-card__amount { font-size:var(--fs-lg); font-weight:800; line-height:var(--leading-heading); color:var(--foreground); }
+.item-card__cur { font-size:var(--fs-xs); font-weight:700; color:var(--foreground); }
+/* Action: "Add" button, or − qty + once the item is in the cart. 44px inside + the 1.5px borders */
+.item-card__add, .item-card__stepper {
+  width:100%; height:calc(var(--tap-size) + 2 * var(--border-strong)); margin-top:auto;
+  border:var(--border-strong) solid var(--primary); border-radius:var(--radius);
+}
+.item-card__add {
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--space-1-5);
+  background:transparent; color:var(--primary); font:inherit; font-size:var(--fs-sm); font-weight:700; cursor:pointer;
+  transition:background-color var(--duration-fast);
+}
+.item-card__stepper {
+  display:flex; align-items:center; justify-content:space-between; overflow:hidden;
+  background:rgb(252 241 234); background:color-mix(in oklab, var(--primary) 8%, var(--card));
+}
+.item-card__step {
+  display:inline-flex; align-items:center; justify-content:center; width:var(--tap-size); height:100%;
+  border:0; background:transparent; color:var(--primary); cursor:pointer; transition:background-color var(--duration-fast);
+}
+.item-card__qty { font-size:var(--fs-base); font-weight:800; color:var(--foreground); }
+.item-card__step-icon { width:var(--icon-sm); height:var(--icon-sm); }
+.item-card__add:focus-visible, .item-card__step:focus-visible { outline:2px solid var(--ring); outline-offset:2px; }
+@media (hover:hover) {
+  .item-card__add:hover { background:rgb(192 69 0 / 0.1); background:color-mix(in oklab, var(--primary) 10%, transparent); }
+  .item-card__step:hover { background:rgb(192 69 0 / 0.14); background:color-mix(in oklab, var(--primary) 14%, transparent); }
+}
+
+
+/* ---------- 9. Install card: icon + text at the start, button underneath on the same side ---------- */
+.install-section { margin-top:var(--section-space); }
+.install-card { padding:var(--install-padding); }
+.install-card__row {
+  display:grid; grid-template-columns:var(--install-icon-size) 1fr; align-items:center;
+  column-gap:var(--space-4); row-gap:var(--space-4); text-align:start;
+}
+.install-card__icon { width:var(--install-icon-size); height:var(--install-icon-size); border-radius:var(--radius-lg); box-shadow:var(--shadow-icon); }
+.install-card__title { margin:0; font-size:var(--fs-lg); font-weight:700; line-height:var(--leading-heading); color:var(--foreground); }
+.install-card__desc { margin:var(--space-1) 0 0; font-size:var(--fs-sm); color:var(--muted-foreground); }
+.install-card__btn { grid-column:1 / -1; justify-self:start; height:var(--tap-size); }
+.install-steps { grid-column:1 / -1; margin-top:0; }   /* manual steps, shown under the button */
+
+
+/* ---------- 10. Footer: contact buttons, map link, opening hours ---------- */
+.site-footer { padding-top:var(--section-space); padding-bottom:calc(var(--page-end-space) + var(--safe-bottom)); }
+body.has-cart-fab .site-footer { padding-bottom:calc(var(--cart-fab-space) + var(--safe-bottom)); }   /* room for the cart button */
+.footer-map { color:inherit; text-decoration:none; transition:background-color var(--duration-fast); }
+.footer-map__icon { width:var(--footer-map-icon); height:var(--footer-map-icon); flex-shrink:0; margin-top:var(--space-0-5); object-fit:contain; }
+.footer-map__cta { display:inline-flex; align-items:center; gap:var(--space-1); flex-shrink:0; color:var(--primary); font-weight:600; white-space:nowrap; }
+@media (hover:hover) { .footer-map:hover { background:rgb(238 228 223); background:color-mix(in oklab, var(--primary) 10%, var(--muted)); } }
+.footer-hours { max-width:var(--footer-hours-max); }
+
+
+/* ---------- 11. Windows (popups) ---------- */
+/* Same side space as the page, never under the notch or home bar */
+[role="dialog"] {
+  width:calc(100% - var(--gutter) * 2); border-radius:var(--radius-lg);
+  max-height:calc(100svh - var(--safe-top) - var(--safe-bottom) - var(--space-8));
+}
+/* The opening animation plays once (updates inside an open window don't replay it);
+   the closing animation holds its last frame until the window is removed */
+[data-settled][data-state="open"] { animation:none !important; }
+[role="dialog"][data-state="closed"], [data-dlg-overlay][data-state="closed"] { animation-fill-mode:forwards; }
+/* Close (×): 44px touch area in the top end corner (left in Arabic), clear of the title */
+.dialog-close {
+  top:var(--space-1); right:auto; inset-inline-end:var(--space-1);
+  display:flex; align-items:center; justify-content:center; width:var(--tap-size); height:var(--tap-size);
+}
+/* Pizza pickers: the picks box stays at the top and the add button at the bottom while the list scrolls
+   (the window has 24px padding, which these bars cover) */
+.sheet-sticky-top {
+  position:sticky; top:calc(var(--space-6) * -1); z-index:2;
+  margin:calc(var(--space-6) * -1) calc(var(--space-6) * -1) 0; padding:var(--space-6) var(--space-6) var(--space-2);
+  background:var(--background);
+}
+.sheet-sticky-bottom {
+  position:sticky; bottom:calc(var(--space-6) * -1); z-index:2; gap:var(--space-2);
+  margin:0 calc(var(--space-6) * -1) calc(var(--space-6) * -1); padding:var(--space-3) var(--space-6) var(--space-6);
+  border-top:1px solid var(--border); background:var(--background);
+}
+.type-btn--picked { border-color:var(--primary); background:rgb(192 69 0 / 0.1); background:color-mix(in oklab, var(--primary) 10%, transparent); }
+.type-btn__count {
+  flex-shrink:0; padding:0 var(--space-2); border-radius:var(--radius-full);
+  background:var(--primary); color:var(--primary-foreground); font-size:var(--fs-xs); line-height:var(--space-6);
+}
+/* Cart while the restaurant is closed: viewable, with a short note */
+.cart-closed-note {
+  display:flex; align-items:center; gap:var(--space-2); margin:0; padding:var(--space-2-5) var(--space-3);
+  border-radius:var(--radius); background:var(--muted); font-size:var(--fs-sm); color:var(--muted-foreground);
+}
+/* Checkout: required fields left empty (shown after the first tap on the button) */
+.field-error { margin:var(--space-1) 0 0; font-size:var(--fs-xs); color:var(--danger-text); }
+[aria-invalid="true"] { border-color:var(--danger-text) !important; }
+/* "Did you send it?" check after WhatsApp opens */
+.sent-card { display:flex; flex-direction:column; align-items:center; gap:var(--space-3); text-align:center; }
+.sent-card__icon { width:var(--icon-2xl); height:var(--icon-2xl); color:var(--whatsapp); }
+.sent-card__title { margin:0; font-size:var(--fs-lg); font-weight:700; line-height:var(--leading-heading); }
+.sent-card__text { margin:0 0 var(--space-1); font-size:var(--fs-sm); color:var(--muted-foreground); }
+/* Closed popup: food photo, logo overlapping it, next opening time, hours, one button */
+.closed-card { gap:0; padding:0; overflow:hidden; max-width:var(--closed-card-max); }
+.closed-card__media { position:relative; height:var(--closed-photo-height); }
+.closed-card__media::after { content:""; position:absolute; inset:0; background:linear-gradient(to bottom, transparent 40%, var(--scrim-soft)); }
+.closed-card__photo { display:block; width:100%; height:100%; object-fit:cover; }
+.closed-card__logo {
+  position:absolute; z-index:1; left:50%; bottom:calc(var(--closed-logo-size) / -2); transform:translateX(-50%);
+  width:var(--closed-logo-size); height:var(--closed-logo-size); object-fit:cover;
+  border:4px solid var(--background); border-radius:var(--radius-full); background:var(--card); box-shadow:var(--shadow-float);
+}
+.closed-card__body {
+  display:flex; flex-direction:column; gap:var(--space-3); text-align:center;
+  padding:calc(var(--closed-logo-size) / 2 + var(--space-3)) var(--space-6) var(--space-6);
+}
+.closed-card__title { margin:0; font-size:var(--fs-lg); font-weight:700; line-height:var(--leading-heading); color:var(--foreground); }
+.closed-card__next { margin:0; font-size:var(--fs-base); font-weight:700; color:var(--primary); }
+.closed-card__hours {
+  display:flex; flex-direction:column; gap:var(--space-1); padding:var(--space-3) var(--space-4); text-align:start;
+  border-radius:var(--radius-md); background:var(--muted); font-size:var(--fs-sm); color:var(--muted-foreground);
+}
+.closed-card__note { margin:0; font-size:var(--fs-sm); color:var(--muted-foreground); }
+.closed-card .dialog-close { color:var(--hero-text); opacity:1; }
+.closed-card .dialog-close svg { box-sizing:content-box; padding:var(--space-1-5); border-radius:var(--radius-full); background:var(--scrim-soft); }
+
+
+/* ---------- 12. Floating cart button: sits above the home bar, bumps when something is added ---------- */
+.cart-fab-wrap {
+  bottom:calc(var(--space-4) + var(--safe-bottom));
+  padding-left:max(var(--space-4), var(--safe-left)); padding-right:max(var(--space-4), var(--safe-right));
+}
+@keyframes cart-bump { 0% { transform:scale(1); } 35% { transform:scale(1.08); } 70% { transform:scale(.97); } to { transform:scale(1); } }
+.cart-bump { animation:cart-bump var(--duration-bump) ease-out; }
+
+
+/* ---------- 13. Loading skeleton: grey blocks with a soft moving shine until the menu and photos are ready ---------- */
+@keyframes skel-shine { 0% { background-position:100% 0; } to { background-position:-100% 0; } }
+.skel, .item-card__media {
+  background:linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%);
+  background-size:200% 100%; animation:skel-shine var(--skeleton-speed) ease-in-out infinite;
+}
+.item-card__media:has(.is-loaded) { animation:none; background:none; }
+.skel { border-radius:var(--radius-sm); }
+.skel-header { display:flex; align-items:center; gap:var(--space-3); height:var(--search-height); }
+.skel--logo { width:var(--nav-logo-size); height:var(--nav-logo-size); flex-shrink:0; border-radius:var(--radius-sm); }
+.skel--search { flex:1; max-width:var(--search-max-width); height:var(--search-height); border-radius:var(--radius); }
+.skel--lang { width:3.5rem; height:var(--icon-lg); margin-inline-start:auto; }
+.skel-tabs { display:flex; gap:var(--space-2); padding:var(--space-1) 0; }
+.skel--tab { width:4.5rem; height:var(--space-8); border-radius:var(--radius); }
+.skel-section { display:flex; flex-direction:column; gap:var(--space-5); }
+.skel--title { width:9rem; height:var(--space-8); }
+.skel-card {
+  display:flex; flex-direction:column; gap:var(--space-3); padding:var(--space-3);
+  border:1px solid var(--border); border-radius:var(--radius); background:var(--card);
+}
+.skel--img { aspect-ratio:1/1; }
+.skel-card__row { display:flex; justify-content:space-between; gap:var(--space-2); }
+.skel--line { width:55%; height:var(--space-4); }
+.skel--price { width:25%; height:var(--space-4); }
+.skel--btn { height:2.5rem; border-radius:var(--radius); }
+
+
+/* ---------- 14. Ordering closed: order buttons look and act disabled; the menu stays browsable ---------- */
+.ordering-closed [aria-disabled="true"] { opacity:.45; cursor:not-allowed; filter:grayscale(.6); box-shadow:none; }
+.ordering-closed [aria-disabled="true"]:hover { transform:none; box-shadow:none; }
+.ordering-closed .hero-btn--primary[aria-disabled="true"]:hover { background:var(--primary); }
+.ordering-closed .offer-card__btn[aria-disabled="true"]:hover { background:transparent; color:var(--primary); }
+.ordering-closed .item-card__add[aria-disabled="true"]:hover { background:transparent; }
+
+
+/* ---------- 15. Touch sizes: buttons and fields are at least 44px ---------- */
+.tap-target { width:var(--tap-size); height:var(--tap-size); flex-shrink:0; }   /* small icon buttons (cart − / +) */
+.tap-h { height:var(--tap-size); }                                               /* window buttons and form fields */
+
+
+/* Reduced motion: no shimmer or bump for people who turned animations off */
+@media (prefers-reduced-motion:reduce) {
+  .skel, .item-card__media, .cart-bump { animation:none; }
+}

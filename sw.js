@@ -2,19 +2,21 @@
 // Page, styles and scripts: network first, so changes show right away; the saved copy is used when offline.
 // Photos, icons and fonts: saved copy first (they rarely change), refreshed in the background.
 // Bump VERSION when the list below changes.
-const VERSION = "nah-v1";
+const VERSION = "nah-v5";
 const SHELL = [
   "./",
   "index.html",
   "manifest.webmanifest",
   "assets/tokens/tokens.css",
-  "assets/css/styles.css",
+  "assets/css/tailwind.css",
+  "assets/css/components.css",
   "assets/js/i18n.js",
   "assets/js/menu-data.js",
   "assets/js/icons.js",
   "assets/js/app.js",
-  "assets/images/logo.jpg",
+  "assets/images/logo-mark.png",
   "assets/images/menu/p-pizza.jpg",
+  "assets/images/hero-poster.jpg",
   "assets/icons/icon-192x192.png",
   "assets/icons/favicon.png",
   "assets/icons/google-maps.svg"

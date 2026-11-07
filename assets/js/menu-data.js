@@ -1,5 +1,8 @@
-// Restaurant info, store settings, delivery zones and the full menu.
-// Values are the original site's own data. Edit here only.
+// Restaurant info, store settings, delivery zones and the full menu — the only file to edit for menu changes.
+// Values are the restaurant's own data (from their original site / admin panel).
+//
+// Photos: every item in MANAQEESH, KALZONI, MOAJANAT and DRINKS shows the photo  assets/images/menu/<id>.jpg
+// (square or 4:3, at least 520px). An item without a photo yet gets  noPhoto: true  and shows a placeholder.
 
 window.RESTAURANT = {
   phone: "0799371612",
@@ -44,7 +47,7 @@ window.MENU = {
     { id: "khodar", name: "خضار", nameEn: "Veggie", desc: "صوص، زيتون، فليفلة، فطر، موزريلا", descEn: "Sauce, olives, peppers, mushrooms, mozzarella" },
     { id: "salami", name: "سلامي", nameEn: "Salami", desc: "صوص، سلامي، موزريلا", descEn: "Sauce, salami, mozzarella", badge: "best" },
     { id: "alfredo", name: "الفريدو", nameEn: "Alfredo", desc: "كريمة، دجاج، فطر، موزريلا", descEn: "Cream, chicken, mushrooms, mozzarella" },
-    { id: "ranger", name: "زنجر", nameEn: "Zinger", desc: "صوص، زنجر، موزريلا", descEn: "Sauce, zinger, mozzarella" },
+    { id: "zinger", name: "زنجر", nameEn: "Zinger", desc: "صوص، زنجر، موزريلا", descEn: "Sauce, zinger, mozzarella" },
     { id: "bbq", name: "باربيكيو", nameEn: "BBQ", desc: "صوص، دجاج، موزريلا، صوص الباربيكيو", descEn: "Sauce, chicken, mozzarella, BBQ sauce" },
     { id: "supreme-meat", name: "سبريم لحمة", nameEn: "Supreme Meat", desc: "صوص، قطع لحمة، زيتون، فليفلة، موزريلا", descEn: "Sauce, meat chunks, olives, peppers, mozzarella" },
     { id: "peproni", name: "بروني", nameEn: "Pepperoni", desc: "صوص، قطع البروني، موزريلا", descEn: "Sauce, pepperoni, mozzarella" },
@@ -93,7 +96,7 @@ window.MENU = {
     { id: "m-lahmeh-qashqawan", name: "لحمة مع قشقوان", nameEn: "Meat & Kashkawan", price: 0.8 },
     { id: "m-fajita", name: "فاهيتا", nameEn: "Fajita", price: 0.8 },
     { id: "m-shish-qashqawan", name: "شيش مع قشقوان", nameEn: "Shish & Kashkawan", price: 0.8 },
-    { id: "m-ranger", name: "رينجر مع موزريلا", nameEn: "Ranger & Mozzarella", price: 0.8 },
+    { id: "m-zinger", name: "زنجر مع موزريلا", nameEn: "Zinger & Mozzarella", price: 0.8 },
     { id: "m-sabanekh", name: "سبانخ", nameEn: "Spinach", price: 0.6 },
     { id: "m-zaytoun-jibneh", name: "زيتون مع جبنة", nameEn: "Olives & Cheese", price: 0.6 },
     { id: "m-cheddar-sanawbar", name: "شيدر مع سنيورة", nameEn: "Cheddar & Pine Nuts", price: 0.6 },
@@ -128,10 +131,6 @@ window.MENU = {
     { id: "mo-sabanekh", name: "سبانخ", nameEn: "Spinach", price: 0.3 }
   ],
 
-  AAJEEN: [
-    { id: "a-moajanat", name: "معجنات", nameEn: "Pastry", price: 0.12 },
-    { id: "a-manqousheh", name: "منقوشة", nameEn: "Manqousheh", price: 0.2 }
-  ],
 
   SALADS: [],
 
@@ -146,106 +145,10 @@ window.MENU = {
   ]
 };
 
-// Item photos (Shami pastries + Manakish), looked up by item id, then by Arabic name
-window.ITEM_IMAGES = {
-  // Calzone — photos from the restaurant's live site (Nov 2026 update)
-  "k-alfredo": "assets/images/menu/k-alfredo.jpg",
-  "k-zinger": "assets/images/menu/k-zinger.jpg",
-  "k-zinger-cream": "assets/images/menu/k-zinger-cream.jpg",
-  "k-bbq": "assets/images/menu/k-bbq.jpg",
-  "k-supreme": "assets/images/menu/k-supreme.jpg",
-  "k-fajita": "assets/images/menu/k-fajita.jpg",
-  "k-mix-cheese": "assets/images/menu/k-mix-cheese.jpg",
-  // Drinks — Matrix 250ml cans (same studio set, white background)
-  "d-cola": "assets/images/menu/d-cola.jpg",
-  "d-cola-zero": "assets/images/menu/d-cola-zero.jpg",
-  "d-orange": "assets/images/menu/d-orange.jpg",
-  "d-seven-up": "assets/images/menu/d-seven-up.jpg",
-  "d-fruits": "assets/images/menu/d-fruits.jpg",
-  "d-lemon": "assets/images/menu/d-lemon.jpg",
-  "d-seven-up-zero": "assets/images/menu/d-seven-up-zero.jpg",
-  "mo-lahmeh": "assets/images/menu/shami-mo-lahmeh.jpg",
-  "mo-jibneh-bayda": "assets/images/menu/shami-mo-jibneh-bayda.jpg",
-  "mo-hotdog": "assets/images/menu/shami-mo-hotdog.jpg",
-  "mo-pizza": "assets/images/menu/shami-mo-pizza.jpg",
-  "mo-batata": "assets/images/menu/shami-mo-batata.jpg",
-  "mo-jibneh-qashqawan-zaatar": "assets/images/menu/shami-mo-jibneh-qashqawan-zaatar.jpg",
-  "mo-sabanekh": "assets/images/menu/shami-mo-sabanekh.jpg",
-  "mo-jibneh-safra": "assets/images/menu/shami-mo-jibneh-safra.jpg",
-  "mo-safiha": "assets/images/menu/shami-mo-safiha.jpg",
-  "mo-jibneh-zaytoun": "assets/images/menu/shami-mo-jibneh-zaytoun.jpg",
-  "mo-jibneh-zaatar": "assets/images/menu/shami-mo-jibneh-zaatar.jpg",
-  "mo-cheddar-sanawbar": "assets/images/menu/shami-mo-cheddar-sanawbar.jpg",
-  "m-zaatar": "assets/images/menu/m-zaatar.jpg",
-  "m-jibneh-zaatar": "assets/images/menu/m-jibneh-zaatar.jpg",
-  "m-jibneh-bayda": "assets/images/menu/m-jibneh-bayda.jpg",
-  "m-jibneh-mix": "assets/images/menu/m-jibneh-mix.jpg",
-  "m-mohammara": "assets/images/menu/m-mohammara.jpg",
-  "m-lahmeh": "assets/images/menu/m-lahmeh.jpg",
-  "m-hotdog": "assets/images/menu/m-hotdog.jpg",
-  "m-salami": "assets/images/menu/m-salami.jpg",
-  "m-turkey": "assets/images/menu/m-turkey.jpg",
-  "m-baid": "assets/images/menu/m-baid.jpg",
-  "m-jibneh-qashqawan": "assets/images/menu/m-jibneh-qashqawan.jpg",
-  "m-jibneh-safra": "assets/images/menu/m-jibneh-safra.jpg",
-  "m-zaatar-qashqawan": "assets/images/menu/m-zaatar-qashqawan.jpg",
-  "m-baid-jibneh": "assets/images/menu/m-baid-jibneh.jpg",
-  "m-baid-hotdog": "assets/images/menu/m-baid-hotdog.jpg",
-  "m-lahmeh-qashqawan": "assets/images/menu/m-lahmeh-qashqawan.jpg",
-  "m-fajita": "assets/images/menu/m-fajita.jpg",
-  "m-shish-qashqawan": "assets/images/menu/m-shish-qashqawan.jpg",
-  "m-ranger": "assets/images/menu/m-ranger.jpg",
-  "m-sabanekh": "assets/images/menu/m-sabanekh.jpg",
-  "m-zaytoun-jibneh": "assets/images/menu/m-zaytoun-jibneh.jpg",
-  "m-cheddar-sanawbar": "assets/images/menu/m-cheddar-sanawbar.jpg",
-  "m-alfredo": "assets/images/menu/m-alfredo.jpg",
-  "m-pizza": "assets/images/menu/m-pizza.jpg",
-  "m-mohammara-plain": "assets/images/menu/m-mohammara-plain.jpg",
-  "m-qashqawan-zaytoun": "assets/images/menu/m-qashqawan-zaytoun.jpg"
-};
-const ITEM_IMAGES = window.ITEM_IMAGES;
-window.ITEM_IMAGES_BY_NAME = {
-  "لحمة": ITEM_IMAGES["mo-lahmeh"],
-  "جبنة بيضاء": ITEM_IMAGES["mo-jibneh-bayda"],
-  "هوت دوغ": ITEM_IMAGES["mo-hotdog"],
-  "هوت دوج": ITEM_IMAGES["mo-hotdog"],
-  "بيتزا": ITEM_IMAGES["mo-pizza"],
-  "بطاطا": ITEM_IMAGES["mo-batata"],
-  "جبنة قشقوان مع زعتر": ITEM_IMAGES["mo-jibneh-qashqawan-zaatar"],
-  "سبانخ": ITEM_IMAGES["mo-sabanekh"],
-  "جبنة صفراء": ITEM_IMAGES["mo-jibneh-safra"],
-  "صفيحة شامية": ITEM_IMAGES["mo-safiha"],
-  "جبنة مع زيتون": ITEM_IMAGES["mo-jibneh-zaytoun"],
-  "شدر مع سنيورة": ITEM_IMAGES["mo-cheddar-sanawbar"],
-  "شيدر مع سمندورة": ITEM_IMAGES["mo-cheddar-sanawbar"],
-  "زعتر": ITEM_IMAGES["m-zaatar"],
-  "جبنة مع زعتر": ITEM_IMAGES["m-jibneh-zaatar"],
-  "جبنة بيضة": ITEM_IMAGES["m-jibneh-bayda"],
-  "جبنة مكس": ITEM_IMAGES["m-jibneh-mix"],
-  "محمرة مع قشقوان": ITEM_IMAGES["m-mohammara"],
-  "هوت دوج مع موزريلا": ITEM_IMAGES["m-hotdog"],
-  "سلامي مع قشقوان": ITEM_IMAGES["m-salami"],
-  "تركي مع قشقوان": ITEM_IMAGES["m-turkey"],
-  "بيض": ITEM_IMAGES["m-baid"],
-  "جبنة قشقوان": ITEM_IMAGES["m-jibneh-qashqawan"],
-  "زعتر مع قشقوان": ITEM_IMAGES["m-zaatar-qashqawan"],
-  "بيض مع جبنة": ITEM_IMAGES["m-baid-jibneh"],
-  "بيض مع هوت دوج": ITEM_IMAGES["m-baid-hotdog"],
-  "لحمة مع قشقوان": ITEM_IMAGES["m-lahmeh-qashqawan"],
-  "فاهيتا": ITEM_IMAGES["m-fajita"],
-  "شيش مع قشقوان": ITEM_IMAGES["m-shish-qashqawan"],
-  "رينجر مع موزريلا": ITEM_IMAGES["m-ranger"],
-  "زيتون مع جبنة": ITEM_IMAGES["m-zaytoun-jibneh"],
-  "شيدر مع سنيورة": ITEM_IMAGES["m-cheddar-sanawbar"],
-  "الفريدو": ITEM_IMAGES["m-alfredo"],
-  "محمرا سادا": ITEM_IMAGES["m-mohammara-plain"],
-  "قشقوان مع زيتون": ITEM_IMAGES["m-qashqawan-zaytoun"]
-};
-
+// Shared images (menu item photos follow the <id>.jpg rule above)
 window.IMAGES = {
-  logo: "assets/images/logo.jpg",
+  logo: "assets/images/logo-mark.png",   // header logo: transparent cut-out of logo.jpg (logo.jpg stays for Google and link previews)
   appIcon: "assets/icons/icon-192x192.png",
   googleMaps: "assets/icons/google-maps.svg",   // official Google Maps pin (2020)
-  heroVideo: "assets/video/hero.mp4",
   pizza: "assets/images/menu/p-pizza.jpg"   // single-pizza cards (from the restaurant's site)
 };

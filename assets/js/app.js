@@ -1,6 +1,8 @@
 // Pizza Nour El Hana — digital menu
-// Plain-JS rebuild of the original React page. Class names match the original 1:1
-// so the compiled stylesheet (assets/css/styles.css) renders it identically.
+// Plain JavaScript, no build step. Data comes from menu-data.js, words from i18n.js, icons from icons.js.
+// Styling: design tokens (assets/tokens/tokens.css) → utility classes (assets/css/tailwind.css) and
+// the site's own components (assets/css/components.css).
+// Sections below: helpers · opening hours · state · cart · menu sections · page regions · windows · events · start-up
 (() => {
   const T = window.I18N;
   const R = window.RESTAURANT;
@@ -9,21 +11,16 @@
   const ZONES = window.DELIVERY_ZONES.filter((z) => z.active).sort((a, b) => a.sort_order - b.sort_order);
   const icon = window.icon;
 
-  /* ---------- Component class strings (shadcn/ui, as compiled on the original) ---------- */
+  /* ---------- Shared class strings (buttons, inputs, windows) ---------- */
   const FOCUS = "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0";
   const BTN = `inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium cursor-pointer transition-colors ${FOCUS}`;
   const V_DEFAULT = "bg-primary text-primary-foreground shadow hover:bg-primary/90";
   const V_OUTLINE = "border border-input bg-background shadow-sm hover:bg-muted hover:text-foreground";
-  const V_GHOST = "hover:bg-muted hover:text-foreground";
   const C = {
     btnPrimary: `${BTN} ${V_DEFAULT} tap-h px-4 py-2`,
     btnOutline: `${BTN} ${V_OUTLINE} tap-h px-4 py-2`,
     btnPrimaryFull: `${BTN} ${V_DEFAULT} tap-h px-4 py-2 w-full`,
-    btnAddToCart: `inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium cursor-pointer transition-colors ${FOCUS} ${V_DEFAULT} h-9 px-4 py-2 gap-2`,
     btnIconOutline: `${BTN} ${V_OUTLINE} tap-target`,
-    btnIconPrimary: `${BTN} ${V_DEFAULT} h-8 w-8`,
-    btnOrder: `inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium cursor-pointer transition-colors ${FOCUS} ${V_DEFAULT} rounded-md h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm`,
-    btnAdd: `inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium cursor-pointer transition-colors ${FOCUS} border bg-background shadow-sm h-8 rounded-md px-3 text-xs mt-auto w-full shrink-0 border-primary/30 text-primary btn-add-subtle`,
     btnWhatsApp: `${BTN} shadow tap-h px-4 py-2 gap-2 bg-[#25D366] hover:bg-[#1eb955] text-white`,
     btnCartFab: `inline-flex items-center justify-center whitespace-nowrap font-medium cursor-pointer transition-colors ${FOCUS} bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xl gap-3 rounded-full px-6 h-14 text-base`,
     btnInstall: `inline-flex items-center justify-center whitespace-nowrap font-medium cursor-pointer transition-colors ${FOCUS} text-primary-foreground hover:bg-primary/90 h-9 py-2 gap-2 rounded-full bg-primary px-8 text-base shadow-md`,
@@ -38,12 +35,12 @@
     dialogSm: "fixed left-[50%] top-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg max-w-sm rounded-lg text-center",
     dialogHeader: "flex flex-col space-y-1.5 text-center sm:text-left",
     dialogTitle: "text-lg font-semibold leading-none tracking-tight",
-    dialogDesc: "text-sm text-muted-foreground",
     dialogFooter: "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
     dialogClose: "dialog-close absolute rounded-sm opacity-70 ring-offset-background cursor-pointer transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
   };
 
   /* ---------- Helpers ---------- */
+  const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch { return null; } },
@@ -54,7 +51,9 @@
   const SIZE_LABEL = { small: { ar: "صغير", en: "Small" }, medium: { ar: "وسط", en: "Medium" }, large: { ar: "كبير", en: "Large" } };
   const sizeLabel = (id) => SIZE_LABEL[id][S.lang];
   const t = (key) => T[key][S.lang];
-  const money = (n) => (S.lang === "en" ? `${n.toFixed(2)} JD` : `${n.toFixed(2)} د.أ`);
+  const dir = () => (S.lang === "ar" ? "rtl" : "ltr");
+  const cur = () => t("currency");
+  const money = (n) => `${n.toFixed(2)} ${cur()}`;
   const waNumber = () => {
     let n = R.phone.replace(/\D/g, "");
     if (n.startsWith("0")) n = "962" + n.slice(1);
@@ -120,17 +119,16 @@
     const at = nextOpening(st, d);
     const days = Math.round((new Date(`${ammanNow(at).date}T00:00:00Z`) - new Date(`${ammanNow(d).date}T00:00:00Z`)) / 864e5);
     const loc = lang === "en" ? "en-US" : "ar-JO-u-nu-latn"; // Western digits, same as the opening hours in the footer
-    const day = days === 0 ? (lang === "en" ? "Today" : "اليوم") : days === 1 ? (lang === "en" ? "Tomorrow" : "غدًا")
+    const day = days === 0 ? T.today[lang] : days === 1 ? T.tomorrow[lang]
       : new Intl.DateTimeFormat(loc, { timeZone: R.timeZone, weekday: "long" }).format(at);
     const time = new Intl.DateTimeFormat(loc, { timeZone: R.timeZone, hour: "numeric", minute: "2-digit", hour12: true }).format(at);
-    return lang === "en" ? `${day} at ${time}` : `${day} الساعة ${time}`;
+    return `${day} ${T.atTime[lang]} ${time}`;
   }
   function storeState(st, d) {
     if (!st.accepting_orders) return "closed";
     if (!isOpenNow(st, d)) return "outside_hours";
     return st.busy && (!st.busy_until || new Date(st.busy_until) > d) ? "busy" : "open";
   }
-  const hhmm = (s) => s.slice(0, 5);
 
   /* ---------- State ---------- */
   const S = {
@@ -153,7 +151,9 @@
     preview: null,
     co: { mode: "pickup", zone: "inside", name: "", phone: "", address: "", notes: "" },
     sending: false,
-    sentCheck: false
+    sentCheck: false,
+    lastMessage: null,   // last WhatsApp message, for "open WhatsApp again"
+    installHelp: false   // manual install steps shown
   };
 
   const visible = (list) => list.filter((i) => !S.hidden.has(i.id));
@@ -165,7 +165,7 @@
   const status = () => (TEST_OPEN ? "open" : storeState(S.settings, S.now));
   const canOrder = () => { const s = status(); return s !== "closed" && s !== "outside_hours"; };
   // Names and prices always come from the menu, so the cart follows the language and the current prices
-  const findItem = (id) => [M.MANAQEESH, M.KALZONI, M.MOAJANAT, M.AAJEEN, M.SALADS, M.DRINKS].flat().find((i) => i.id === id);
+  const findItem = (id) => [M.MANAQEESH, M.KALZONI, M.MOAJANAT, M.SALADS, M.DRINKS].flat().find((i) => i.id === id);
   function lineInfo(l, lang = S.lang) {
     const nm = (x) => (lang === "en" && x.nameEn ? x.nameEn : x.name);
     const sz = (id) => SIZE_LABEL[id][lang];
@@ -173,7 +173,7 @@
     if (l.kind === "item") { const it = findItem(l.id); return ok(it) ? { title: nm(it), price: it.price } : null; }
     if (l.kind === "pizza") {
       const s = M.PIZZA_SIZES.find((x) => x.id === l.sizeId), p = M.PIZZA_TYPES.find((x) => x.id === l.typeId);
-      return ok(s) && ok(p) ? { title: lang === "en" ? `Pizza ${nm(p)} — size ${sz(s.id)}` : `بيتزا ${nm(p)} — حجم ${sz(s.id)}`, price: s.price } : null;
+      return ok(s) && ok(p) ? { title: `${T.pizzaWord[lang]} ${nm(p)} — ${T.sizeWord[lang]} ${sz(s.id)}`, price: s.price } : null;
     }
     if (l.kind === "offer") {
       const o = M.OFFERS.find((x) => x.id === l.offerId), picks = (l.picks ?? []).map((id) => M.PIZZA_TYPES.find((x) => x.id === id));
@@ -214,7 +214,7 @@
   }
   const dealsTotal = () => pizzaDeals().reduce((a, d) => a + d.amount, 0);
   const payable = () => cartSubtotal() - dealsTotal();
-  const dealLabel = (d) => `${S.lang === "ar" ? "خصم عرض" : "Offer discount:"} ${nameOf(d.offer)}${d.bundles > 1 ? ` ×${d.bundles}` : ""}`;
+  const dealLabel = (d) => `${t("offerDiscount")} ${nameOf(d.offer)}${d.bundles > 1 ? ` ×${d.bundles}` : ""}`;
   const dealRows = (cls) => pizzaDeals().map((d) => `<div class="${cls}"><span>${esc(dealLabel(d))}</span><span>-${money(d.amount)}</span></div>`).join("");
   const qtyOf = (id) => S.cart.find((l) => l.kind === "item" && l.id === id)?.qty ?? 0;
 
@@ -235,105 +235,92 @@
     if (S.cartOpen) renderPortal();
   }
 
-  /* ---------- Static pieces ---------- */
-  const badge = (b) => {
-    if (b === "best") return `<span class="badge-shimmer inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">${icon("flame", "h-3 w-3")}${t("bestSeller")}</span>`;
-    if (b === "chef") return `<span class="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">${icon("chef-hat", "h-3 w-3")}${t("chefsChoice")}</span>`;
-    return `<span class="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-primary to-accent px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">${icon("sparkles", "h-3 w-3")}${t("newItem")}</span>`;
-  };
+  /* ---------- Menu sections ---------- */
+  const badge = (b) => b === "best"
+    ? `<span class="badge-shimmer inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">${icon("flame", "h-3 w-3")}${t("bestSeller")}</span>`
+    : `<span class="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">${icon("chef-hat", "h-3 w-3")}${t("chefsChoice")}</span>`;
 
-  // Section title: bold title + one quiet line under it. The offers section gets the discount badge icon.
-  function sectionShell(id, title, subtitle, fullHeading, accent, inner) {
-    const head = `<div class="section-head"><div class="section-head__row">${id === "offers" ? icon("badge-percent", "section-head__icon") : ""}<h2 class="section-head__title">${esc(title)}</h2></div>${subtitle ? `<p class="section-head__sub">${esc(subtitle)}</p>` : ""}</div>`;
-    return `<section id="${id}" class="scroll-mt-40">${head}${inner}</section>`;
+  // Section: bold title (the offers section also gets the discount icon), then its content
+  const sectionShell = (id, title, inner) =>
+    `<section id="${id}" class="scroll-mt-40"><div class="section-head"><div class="section-head__row">${id === "offers" ? icon("badge-percent", "section-head__icon") : ""}<h2 class="section-head__title">${esc(title)}</h2></div></div>${inner}</section>`;
+  const sectionNote = (note) => (note ? `<div class="mb-3 rounded-md border-2 border-accent bg-accent/15 p-3 text-sm font-semibold text-secondary">${esc(note)}</div>` : "");
+  const itemGrid = (cards) => `<div class="item-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">${cards}</div>`;
+
+  // One card for every menu item (and the single pizzas): photo → name (start) / price (end) → action
+  function itemCard({ name, photo, placeholderIcon, badgeId, price, action, inCart }) {
+    // With a photo, the badge sits on the photo's top corner (top-left in Arabic); without one it stays by the name
+    const onPhoto = !!(photo && badgeId);
+    const media = photo
+      ? `<div class="item-card__media"><img class="item-card__img" src="${photo}" alt="${esc(name)}" loading="lazy">${onPhoto ? `<span class="item-card__badge">${badge(badgeId)}</span>` : ""}</div>`
+      : `<div class="item-photo-placeholder" aria-hidden="true">${icon(placeholderIcon, "item-photo-placeholder__icon")}</div>`;
+    return `<div class="item-card${inCart ? " is-in-cart" : ""}">${media}` +
+      `<div class="item-card__body"><div class="item-card__name"><span>${esc(name)}</span>${badgeId && !onPhoto ? badge(badgeId) : ""}</div>` +
+      `<div class="item-card__price"><span class="item-card__amount">${price.toFixed(2)}</span><span class="item-card__cur">${cur()}</span></div></div>` +
+      `${action}</div>`;
   }
+  const addButton = (act, id, label) => `<button type="button" class="item-card__add" data-act="${act}" data-id="${id}">${icon("plus", "item-card__step-icon")}${label}</button>`;
+  const photoOf = (item) => (item.noPhoto ? null : `assets/images/menu/${item.id}.jpg`);
 
-
-  const itemImage = (item) => window.ITEM_IMAGES[item.id] ?? window.ITEM_IMAGES_BY_NAME[item.name.trim()];
-
-  function itemSection(id, title, fullHeading, items, note, showImages) {
+  function itemSection(id, title, items, note) {
     if (items.length === 0) return "";
-    // Item card: photo → name → price (largest) → action. Same hierarchy as the offer cards.
     const cards = items.map((item) => {
-      const name = nameOf(item);
       const qty = qtyOf(item.id);
-      const img = showImages ? itemImage(item) : undefined;
-      const ar = S.lang === "ar";
-      // With a photo, the badge sits on the photo's top corner (top-left in Arabic); without one it stays by the name
-      const onPhoto = !!(img && item.badge);
-      const media = img
-        ? `<div class="item-card__media"><img class="item-card__img" src="${img}" alt="${esc(name)}" loading="lazy">${onPhoto ? `<span class="item-card__badge">${badge(item.badge)}</span>` : ""}</div>`
-        : showImages ? `<div class="item-photo-placeholder" aria-hidden="true">${icon(id === "drinks" ? "cup-soda" : "pizza", "item-photo-placeholder__icon")}</div>` : "";
-      const controls = qty > 0
-        ? `<div class="item-card__stepper" data-stop><button type="button" class="item-card__step" data-act="dec" data-id="${item.id}" aria-label="${ar ? "إنقاص" : "Decrease"}">${icon("minus", "item-card__step-icon")}</button><span class="item-card__qty" aria-live="polite">${qty}</span><button type="button" class="item-card__step" data-act="add" data-id="${item.id}" aria-label="${ar ? "زيادة" : "Increase"}">${icon("plus", "item-card__step-icon")}</button></div>`
-        : `<button type="button" class="item-card__add" data-act="add" data-id="${item.id}">${icon("plus", "item-card__step-icon")}${ar ? "أضف" : "Add"}</button>`;
-      return `<div class="item-card${qty > 0 ? " is-in-cart" : ""}">${media}` +
-        `<div class="item-card__body"><div class="item-card__name"><span>${esc(name)}</span>${item.badge && !onPhoto ? badge(item.badge) : ""}</div>` +
-        `<div class="item-card__price"><span class="item-card__amount">${item.price.toFixed(2)}</span><span class="item-card__cur">${ar ? "د.أ" : "JD"}</span></div></div>` +
-        `${controls}</div>`;
+      const action = qty > 0
+        ? `<div class="item-card__stepper"><button type="button" class="item-card__step" data-act="dec" data-id="${item.id}" aria-label="${t("decrease")}">${icon("minus", "item-card__step-icon")}</button><span class="item-card__qty" aria-live="polite">${qty}</span><button type="button" class="item-card__step" data-act="add" data-id="${item.id}" aria-label="${t("increase")}">${icon("plus", "item-card__step-icon")}</button></div>`
+        : addButton("add", item.id, t("add"));
+      return itemCard({ name: nameOf(item), photo: photoOf(item), placeholderIcon: id === "drinks" ? "cup-soda" : "pizza", badgeId: item.badge, price: item.price, action, inCart: qty > 0 });
     }).join("");
-    const noteHtml = note ? `<div class="mb-3 rounded-md border-2 border-accent bg-accent/15 p-3 text-sm font-semibold text-secondary">${esc(note)}</div>` : "";
-    return sectionShell(id, title, null, fullHeading, false, `${noteHtml}<div class="item-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">${cards}</div>`);
+    return sectionShell(id, title, sectionNote(note) + itemGrid(cards));
   }
 
+  // Offer card: size (title) → price (largest) → saving ribbon (corner) → action
   function offersSection() {
-    // Offer card hierarchy: size (title) → price (largest) → saving badge (corner) → action
     const cards = visible(M.OFFERS).map((o) => {
       const single = M.PIZZA_SIZES.find((sz) => sz.id === o.size).price * o.count;
       const saving = single - o.price;
-      const ar = S.lang === "ar";
-      return `<div class="offer-card reveal">` +
-        `<div class="offer-card__top"><h3 class="offer-card__title"><span class="offer-card__count">${o.count} ${t("offerPizzas")}</span> ${ar ? "حجم" : ""} ${sizeLabel(o.size)}</h3></div>` +
-        (saving > 0 ? `<span class="offer-card__ribbon">${t("offerSave")} ${Number.isInteger(saving) ? saving : saving.toFixed(2)} ${ar ? "د.أ" : "JD"}</span>` : "") +
-        `<div class="offer-card__prices"><span class="offer-card__price">${o.price.toFixed(2)}</span><span class="offer-card__cur">${ar ? "د.أ" : "JD"}</span>${saving > 0 ? `<span class="offer-card__was">${single.toFixed(2)}</span>` : ""}</div>` +
+      return `<div class="offer-card">` +
+        `<div class="offer-card__top"><h3 class="offer-card__title"><span class="offer-card__count">${o.count} ${t("offerPizzas")}</span> ${t("sizeWordShort")} ${sizeLabel(o.size)}</h3></div>` +
+        (saving > 0 ? `<span class="offer-card__ribbon">${t("offerSave")} ${Number.isInteger(saving) ? saving : saving.toFixed(2)} ${cur()}</span>` : "") +
+        `<div class="offer-card__prices"><span class="offer-card__price">${o.price.toFixed(2)}</span><span class="offer-card__cur">${cur()}</span>${saving > 0 ? `<span class="offer-card__was">${single.toFixed(2)}</span>` : ""}</div>` +
         `<button type="button" class="offer-card__btn" data-act="open-offer" data-id="${o.id}">${icon("plus", "offer-card__btn-icon")}${t("offerChoosePizzas")}</button>` +
         `</div>`;
     }).join("");
-    return sectionShell("offers", t("sectionOffers"), null, true, true,
-      `<div class="offer-grid">${cards}</div>`);
+    return sectionShell("offers", t("sectionOffers"), `<div class="offer-grid">${cards}</div>`);
   }
 
-  // Single pizzas use the same item card as the other sections: photo → name (right) / price (left) → action
+  // Single pizzas: same card as every other item; the button opens the type picker
   function pizzaSection(note) {
-    const ar = S.lang === "ar";
-    const cards = visible(M.PIZZA_SIZES).map((s) => {
-      const name = `${ar ? "بيتزا" : "Pizza"} ${sizeLabel(s.id)}`;
-      return `<div class="item-card">` +
-        `<div class="item-card__media"><img class="item-card__img" src="${IMG.pizza}" alt="${esc(name)}" loading="lazy"></div>` +
-        `<div class="item-card__body"><div class="item-card__name"><span>${esc(name)}</span></div>` +
-        `<div class="item-card__price"><span class="item-card__amount">${s.price.toFixed(2)}</span><span class="item-card__cur">${ar ? "د.أ" : "JD"}</span></div></div>` +
-        `<button type="button" class="item-card__add" data-act="open-size" data-id="${s.id}">${icon("plus", "item-card__step-icon")}${t("pizzaChooseType")}</button>` +
-        `</div>`;
-    }).join("");
-    const noteHtml = note ? `<div class="mb-3 rounded-md border-2 border-accent bg-accent/15 p-3 text-sm font-semibold text-secondary">${esc(note)}</div>` : "";
-    return sectionShell("pizza", t("sectionPizza"), null, true, false, `${noteHtml}<div class="item-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">${cards}</div>`);
+    const cards = visible(M.PIZZA_SIZES).map((s) => itemCard({
+      name: `${t("pizzaWord")} ${sizeLabel(s.id)}`, photo: IMG.pizza, price: s.price, action: addButton("open-size", s.id, t("pizzaChooseType"))
+    })).join("");
+    return sectionShell("pizza", t("sectionPizza"), sectionNote(note) + itemGrid(cards));
   }
 
+  // International phone format (+962…) works from any country and matches the business details for Google
+  const telIntl = () => "+962" + String(R.phone).replace(/\D/g, "").replace(/^0/, "");
 
-
-  /* ---------- Regions ---------- */
+  /* ---------- Page regions ---------- */
   // Where the sticky bars start: 0 in a normal browser, the notch height when installed as an app
-  const safeTop = () => parseFloat(getComputedStyle(document.getElementById("site-header")).top) || 0;
-  const $ = (id) => document.getElementById(id);
+  const safeTop = () => parseFloat(getComputedStyle($("site-header")).top) || 0;
 
   function renderMain() {
     const q = searching();
-    const lists = [M.MANAQEESH, M.KALZONI, M.MOAJANAT, M.AAJEEN, M.DRINKS].map(filtered);
+    const lists = [M.MANAQEESH, M.KALZONI, M.MOAJANAT, M.DRINKS].map(filtered);
     // While searching, pizza types / sizes and offers are searched too
     const pizzaTypes = q ? filtered(M.PIZZA_TYPES) : [];
     const pizzaHit = q && (pizzaTypes.length > 0 || filtered(M.PIZZA_SIZES).length > 0);
     const offerHit = q && (filtered(M.OFFERS).length > 0 || offerQuery(S.query));
     const count = lists.reduce((a, l) => a + l.length, 0) + pizzaTypes.length + (offerHit ? visible(M.OFFERS).length : 0);
     let html = "";
-    if (q) html += `<div class="flex items-center justify-center gap-2 rounded-xl border bg-muted/60 p-3 text-center text-sm font-semibold">${icon("search", "h-4 w-4 text-primary")}<span>${count} ${S.lang === "ar" ? `نتيجة لـ "${esc(S.query)}"` : `results for "${esc(S.query)}"`}</span></div>`;
+    if (q) html += `<div class="flex items-center justify-center gap-2 rounded-xl border bg-muted/60 p-3 text-center text-sm font-semibold">${icon("search", "h-4 w-4 text-primary")}<span>${count} ${t("resultsFor")} "${esc(S.query)}"</span></div>`;
     if (!q || offerHit) html += offersSection();
     if (!q) html += pizzaSection();
     else if (pizzaHit) html += pizzaSection(pizzaTypes.length ? `${t("pizzaMatches")}: ${pizzaTypes.map(nameOf).join("، ")}` : null);
-    html += itemSection("manaqeesh", t("sectionManakish"), q ? undefined : true, lists[0], undefined, true);
-    html += itemSection("calzone", t("sectionCalzone"), q ? undefined : true, lists[1], undefined, true);
-    html += itemSection("shami", t("sectionShami"), q ? undefined : true, lists[2], t("shamiNote"), true);
-    if (!q) html += itemSection("salads", t("sectionSalads"), undefined, visible(M.SALADS));
-    html += itemSection("drinks", t("sectionDrinks"), q ? undefined : true, lists[4], undefined, true);
+    html += itemSection("manaqeesh", t("sectionManakish"), lists[0]);
+    html += itemSection("calzone", t("sectionCalzone"), lists[1]);
+    html += itemSection("shami", t("sectionShami"), lists[2], t("shamiNote"));
+    if (!q) html += itemSection("salads", t("sectionSalads"), visible(M.SALADS));
+    html += itemSection("drinks", t("sectionDrinks"), lists[3]);
     if (q && count === 0 && !pizzaHit) html += `<div class="rounded-xl border-2 border-dashed p-10 text-center text-muted-foreground">${t("searchNoResults")}</div>`;
     $("main").innerHTML = html;
     $("main").querySelectorAll(".item-card__img").forEach((img) => { if (img.complete) img.classList.add("is-loaded"); });
@@ -346,14 +333,14 @@
       `<p class="hero-subtitle">${t("brandTagline")}</p>` +
       `<div class="hero-actions">` +
       `<button type="button" class="hero-btn hero-btn--primary" data-act="scroll-down">${icon("shopping-cart", "hero-btn__icon")}${t("orderNow")}</button>` +
-      `<a class="hero-btn hero-btn--secondary" href="tel:${R.phone}">${icon("phone", "hero-btn__icon")}${t("callUs")}</a>` +
+      `<a class="hero-btn hero-btn--secondary" href="tel:${telIntl()}">${icon("phone", "hero-btn__icon")}${t("callUs")}</a>` +
       `</div>`;
   }
 
   function renderBrand() {
     const st = S.settings;
     $("brand").innerHTML =
-      (st.menu_discount_enabled ? `<p class="mt-8 mb-4 border-y border-primary/30 bg-primary/10 py-3 text-sm font-bold text-primary">خصم ${st.menu_discount_percent}٪ عند الطلب من المنيو الرقمي · لا يشمل رسوم التوصيل</p>` : "");
+      (st.menu_discount_enabled ? `<p class="mt-8 mb-4 border-y border-primary/30 bg-primary/10 py-3 text-sm font-bold text-primary">${t("menuDiscountBanner").replace("{n}", st.menu_discount_percent)}</p>` : "");
   }
 
   const NAV = [
@@ -370,13 +357,13 @@
 
   function renderNav() {
     const rtl = S.lang === "ar";
-    $("cat-nav").setAttribute("aria-label", S.lang === "ar" ? "أقسام المنيو" : "Menu categories");
+    $("cat-nav").setAttribute("aria-label", t("menuCategories"));
     $("nav").innerHTML =
-      `<div class="nav-top"><a href="#" class="nav-brand" data-act="back-top" aria-label="${esc(t("brandName"))}"><img class="nav-brand__logo" src="${window.IMAGES.logo}" alt="" width="40" height="40"></a>` +
+      `<div class="nav-top"><a href="#" class="nav-brand" data-act="back-top" aria-label="${esc(t("brandName"))}"><img class="nav-brand__logo" src="${IMG.logo}" alt="" width="56" height="56"></a>` +
       `<div class="nav-search">${icon("search", `pointer-events-none absolute top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-primary ${rtl ? "right-4" : "left-4"}`)}` +
       `<input id="search" class="flex w-full px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm h-11 rounded-lg border border-primary/40 bg-muted font-semibold placeholder:text-muted-foreground ${rtl ? "pr-11 pl-10" : "pl-11 pr-10"}" placeholder="${esc(searchHint())}" value="${esc(S.query)}">` +
       `<button type="button" id="search-clear" data-act="clear-search" aria-label="${t("searchClear")}" class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium cursor-pointer transition-colors ${FOCUS} hover:text-accent-foreground absolute top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:bg-muted ${rtl ? "left-3" : "right-3"}"${S.query ? "" : " hidden"}>${icon("x", "h-4 w-4")}</button></div>` +
-      `<button type="button" class="nav-lang" data-act="lang" lang="${S.lang === "ar" ? "en" : "ar"}" aria-label="${t("switchLanguage")}">${icon("globe", "nav-lang__icon")}<span class="nav-lang__full">${t("switchLanguage")}</span><span class="nav-lang__short">${S.lang === "ar" ? "EN" : "ع"}</span></button></div>`;
+      `<button type="button" class="nav-lang" data-act="lang" lang="${S.lang === "ar" ? "en" : "ar"}" aria-label="${t("switchLanguage")}">${icon("globe", "nav-lang__icon")}<span class="nav-lang__full">${t("switchLanguage")}</span><span class="nav-lang__short">${t("switchLanguageShort")}</span></button></div>`;
     $("cat-nav").innerHTML =
       `<div class="flex gap-1 overflow-x-auto scrollbar-hide">${NAV.map((n) => `<button class="${navBtnClass(S.activeNav === n.id)}" data-act="nav" data-id="${n.id}"${S.activeNav === n.id ? ' aria-current="location"' : ""}>${t(n.key)}</button>`).join("")}</div>`;
   }
@@ -388,10 +375,22 @@
       b.className = navBtnClass(on);
       if (on) b.setAttribute("aria-current", "location"); else b.removeAttribute("aria-current");
     });
+    revealActiveTab();
   }
 
-  // Scroll-spy: a tab is selected only once its section has reached the bar under the header.
-  // Above the menu (on the hero) no tab is selected.
+  // Keep the selected category tab in view: slide the tab bar sideways so the active tab sits in the middle.
+  // Only the tab bar moves (never the page), and it works the same in Arabic and English.
+  function revealActiveTab() {
+    const tab = document.querySelector('#cat-nav [aria-current="location"]');
+    const bar = tab?.parentElement;
+    if (!bar || bar.scrollWidth <= bar.clientWidth) return;
+    const t = tab.getBoundingClientRect(), b = bar.getBoundingClientRect();
+    const shift = (t.left + t.width / 2) - (b.left + b.width / 2);
+    if (Math.abs(shift) > 2) bar.scrollBy({ left: shift, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }
+
+  // Scroll-spy: a tab is selected once its section reaches the bar under the header.
+  // On the first screen (only the hero visible) no tab is selected.
   function observeSections() {
     const update = () => {
       const line = safeTop() + ($("site-header")?.offsetHeight ?? 0) + (document.querySelector(".cat-nav")?.offsetHeight ?? 0) + 48;
@@ -399,6 +398,13 @@
       for (const n of NAV) {
         const el = document.getElementById(n.id);
         if (el && el.getBoundingClientRect().top <= line) current = n.id;
+      }
+      // Offers (the first section) is selected as soon as the menu starts showing on screen, before it reaches the bar
+      const first = document.getElementById(NAV[0].id);
+      if (!current && first && first.getBoundingClientRect().top < window.innerHeight) current = NAV[0].id;
+      // At the very end of the page the last short section (drinks) can't reach the bar: pick the last one on screen
+      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4) {
+        for (const n of NAV) { const el = document.getElementById(n.id); if (el && el.getBoundingClientRect().top < window.innerHeight) current = n.id; }
       }
       if (current !== S.activeNav) setActiveNav(current);
     };
@@ -416,11 +422,11 @@
   function renderStatus() {
     const st = S.settings, state = status(), ar = S.lang === "ar";
     let msg = "", tone = "open";
-    if (state === "closed") { msg = ar ? "🚫 المطعم لا يستقبل طلبات حالياً" : "🚫 We are not accepting orders right now"; tone = "closed"; }
-    else if (state === "outside_hours") { msg = ar ? `🕘 المطعم مغلق الآن · نفتح ${nextOpeningLabel(st, S.now)}` : `🕘 We're closed now · We open ${nextOpeningLabel(st, S.now, "en")}`; tone = "closed"; }
-    else if (state === "busy") { msg = ar ? `🔥 الضغط عالي حالياً · وقت التحضير التقريبي ${st.prep_minutes} دقيقة` : `🔥 We're busy right now · approx. ${st.prep_minutes} min preparation`; tone = "busy"; }
+    if (state === "closed") { msg = `🚫 ${t("statusPaused")}`; tone = "closed"; }
+    else if (state === "outside_hours") { msg = `🕘 ${t("closedTitle")} · ${t("weOpen")} ${nextOpeningLabel(st, S.now, S.lang)}`; tone = "closed"; }
+    else if (state === "busy") { msg = `🔥 ${t("statusBusy").replace("{n}", st.prep_minutes)}`; tone = "busy"; }
     else if (st.notice) { msg = `🛵 ${esc(ar ? st.notice : st.notice_en || st.notice)}`; }
-    if (TEST_OPEN) { msg = ar ? "🧪 وضع التجربة: الطلب مفتوح على جهازك فقط" : "🧪 Test mode: ordering is open on this computer only"; tone = "busy"; }
+    if (TEST_OPEN) { msg = `🧪 ${t("statusTestMode")}`; tone = "busy"; }
     $("announce").innerHTML = msg ? `<div class="announce announce--${tone}" role="status">${msg}</div>` : "";
   }
 
@@ -454,20 +460,16 @@
 
   // Opening hours (as on their live site) — used in the footer and the closed popup
   function hoursRows() {
-    const ar = S.lang === "ar", d = ar ? "rtl" : "ltr";
-    const row = (day, time) => `<div class="flex justify-between gap-2"><span>${day}</span><span class="font-medium text-foreground" dir="${d}">${time}</span></div>`;
-    return row(ar ? "السبت – الخميس" : "Sat – Thu", ar ? "9:30 ص – 10:00 م" : "9:30 AM – 10:00 PM") +
-      row(ar ? "الجمعة" : "Friday", ar ? "10:00 ص – 3:00 م" : "10:00 AM – 3:00 PM");
+    const row = (day, time) => `<div class="flex justify-between gap-2"><span>${day}</span><span class="font-medium text-foreground" dir="${dir()}">${time}</span></div>`;
+    return row(t("hoursWeekDays"), t("hoursWeekTime")) + row(t("hoursFriday"), t("hoursFridayTime"));
   }
 
   function renderFooter() {
-    const ar = S.lang === "ar";
-    $("footer").innerHTML = `<div class="rounded-2xl border bg-card p-5 shadow-sm"><h3 class="mb-4 text-center text-lg font-bold text-secondary">${t("contactTitle")}</h3><div class="grid gap-3 sm:grid-cols-3"><a href="https://wa.me/${waNumber()}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 rounded-xl bg-[#25D366] p-3 font-semibold text-white transition hover:bg-[#1eb955]">${window.brandIcon("whatsapp", "h-5 w-5")}${t("whatsapp")}</a><a href="${R.instagram}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] p-3 font-semibold text-white transition hover:opacity-90">${window.brandIcon("instagram", "h-5 w-5")}${t("instagram")}</a><a href="${R.facebook}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 rounded-xl bg-[#1877F2] p-3 font-semibold text-white transition hover:bg-[#1565ce]">${window.brandIcon("facebook", "h-5 w-5")}${t("facebook")}</a></div><a class="footer-map mt-4 flex items-start gap-3 rounded-lg bg-muted p-3 text-sm" href="${R.maps}" target="_blank" rel="noopener noreferrer"><img src="${IMG.googleMaps}" alt="" class="footer-map__icon"><span class="flex-1">${R.location[S.lang]}</span><span class="footer-map__cta">${S.lang === "ar" ? "افتح في الخريطة" : "Open in Maps"}${icon("external-link", "h-4 w-4")}</span></a><div class="mt-4 flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm">${icon("clock", "mt-0.5 h-5 w-5 shrink-0 text-primary")}<div class="flex-1"><div class="font-semibold text-secondary">${t("businessHours")}</div><div class="footer-hours mt-1 flex flex-col gap-0.5 text-muted-foreground">${hoursRows()}</div></div></div></div>`;
+    $("footer").innerHTML = `<div class="rounded-2xl border bg-card p-5 shadow-sm"><h3 class="mb-4 text-center text-lg font-bold text-secondary">${t("contactTitle")}</h3><div class="grid gap-3 sm:grid-cols-3"><a href="https://wa.me/${waNumber()}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 rounded-xl bg-[#25D366] p-3 font-semibold text-white transition hover:bg-[#1eb955]">${window.brandIcon("whatsapp", "h-5 w-5")}${t("whatsapp")}</a><a href="${R.instagram}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] p-3 font-semibold text-white transition hover:opacity-90">${window.brandIcon("instagram", "h-5 w-5")}${t("instagram")}</a><a href="${R.facebook}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 rounded-xl bg-[#1877F2] p-3 font-semibold text-white transition hover:bg-[#1565ce]">${window.brandIcon("facebook", "h-5 w-5")}${t("facebook")}</a></div><a class="footer-map mt-4 flex items-start gap-3 rounded-lg bg-muted p-3 text-sm" href="${R.maps}" target="_blank" rel="noopener noreferrer"><img src="${IMG.googleMaps}" alt="" class="footer-map__icon"><span class="flex-1">${R.location[S.lang]}</span><span class="footer-map__cta">${t("openInMaps")}${icon("external-link", "h-4 w-4")}</span></a><div class="mt-4 flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm">${icon("clock", "mt-0.5 h-5 w-5 shrink-0 text-primary")}<div class="flex-1"><div class="font-semibold text-secondary">${t("businessHours")}</div><div class="footer-hours mt-1 flex flex-col gap-0.5 text-muted-foreground">${hoursRows()}</div></div></div></div>`;
   }
 
-  /* ---------- Dialogs ---------- */
-  const dir = () => (S.lang === "ar" ? "rtl" : "ltr");
-  const closeBtn = (key) => `<button type="button" class="${C.dialogClose}" data-act="close-dialog" data-dlg="${key}">${icon("x", "h-4 w-4")}<span class="sr-only">Close</span></button>`;
+  /* ---------- Windows (popups) ---------- */
+  const closeBtn = (key) => `<button type="button" class="${C.dialogClose}" data-act="close-dialog" data-dlg="${key}">${icon("x", "h-4 w-4")}<span class="sr-only">${t("close")}</span></button>`;
   const dialog = (key, cls, inner, attrs = "") => `<div data-dlg-overlay="${key}" data-state="open" class="${C.overlay}" aria-hidden="true"></div><div role="dialog" data-dlg="${key}" data-state="open" class="${cls}" tabindex="-1"${attrs}>${inner}${closeBtn(key)}</div>`;
   const header = (title, extra = "") => `<div class="${C.dialogHeader}"><h2 class="${C.dialogTitle}${extra ? " " + extra : ""}">${title}</h2></div>`;
   const radio = (checked, name, value) => `<button type="button" role="radio" aria-checked="${checked}" data-state="${checked ? "checked" : "unchecked"}" value="${value}" class="${C.radio}" data-act="radio" data-name="${name}" data-value="${value}">${checked ? `<span data-state="checked" class="flex items-center justify-center">${icon("circle", "h-3.5 w-3.5 fill-primary")}</span>` : ""}</button>`;
@@ -481,7 +483,7 @@
       `<h2 class="closed-card__title">${t(paused ? "closedPausedTitle" : "closedTitle")}</h2>` +
       (paused
         ? `<p class="closed-card__next">${t("closedBackSoon")}</p>`
-        : `<p class="closed-card__next">${S.lang === "ar" ? "نفتح" : "We open"} ${nextOpeningLabel(st, S.now, S.lang)}</p>` +
+        : `<p class="closed-card__next">${t("weOpen")} ${nextOpeningLabel(st, S.now, S.lang)}</p>` +
           `<div class="closed-card__hours">${hoursRows()}</div>`) +
       `<p class="closed-card__note">${t("closedBrowseNote")}</p>` +
       `<button class="${C.btnPrimaryFull}" data-act="close-dialog" data-dlg="closed">${t("closedBrowse")}</button>` +
@@ -528,7 +530,7 @@
     const lines = S.cart.map((l) => ({ ...l, ...lineInfo(l) })).map((l) => `<div class="${C.card} p-3"><div class="flex items-start justify-between gap-2"><div class="min-w-0 flex-1"><div class="font-semibold">${esc(l.title)}</div>${l.details ? `<ul class="mt-1 text-xs text-muted-foreground space-y-0.5">${l.details.map((d) => `<li>${esc(d)}</li>`).join("")}</ul>` : ""}<div class="mt-1 flex items-baseline gap-2"><span class="text-sm font-bold text-primary">${money(l.price * l.qty)}</span>${l.qty > 1 ? `<span class="text-[11px] text-muted-foreground">${l.qty} × ${money(l.price)}</span>` : ""}</div></div><div class="flex shrink-0 items-center gap-1"><button class="${C.btnIconOutline}" data-act="line-qty" data-line="${l.lineId}" data-delta="-1" aria-label="${l.qty === 1 ? t("remove") : "−1"}">${icon("minus", "h-3 w-3")}</button><span class="w-6 text-center font-bold">${l.qty}</span><button class="${C.btnIconOutline}" data-act="line-qty" data-line="${l.lineId}" data-delta="1" aria-label="+1">${icon("plus", "h-3 w-3")}</button></div></div></div>`).join("");
     const body = S.cart.length === 0
       ? `<div class="py-8 text-center">${icon("shopping-cart", "mx-auto mb-3 h-10 w-10 text-muted-foreground/50")}<p class="text-sm text-muted-foreground">${t("cartEmpty")}</p></div>`
-      : `<div class="space-y-2">${lines}<div class="sticky bottom-0 -mx-1 border-t bg-background/95 px-1 pt-3 backdrop-blur">${dealRows("mb-2 flex justify-between text-sm text-primary")}${tt.discount_percent > 0 ? `<div class="mb-2 flex justify-between text-sm text-primary"><span>خصم المنيو ${tt.discount_percent}٪</span><span>-${money(tt.discount_amount)}</span></div>` : ""}<div class="flex items-center justify-between"><span class="font-semibold">${t("cartTotal")}</span><span class="text-lg font-bold text-primary">${money(tt.total)}</span></div></div></div>`;
+      : `<div class="space-y-2">${lines}<div class="sticky bottom-0 -mx-1 border-t bg-background/95 px-1 pt-3 backdrop-blur">${dealRows("mb-2 flex justify-between text-sm text-primary")}${tt.discount_percent > 0 ? `<div class="mb-2 flex justify-between text-sm text-primary"><span>${t("menuDiscount")} ${tt.discount_percent}٪</span><span>-${money(tt.discount_amount)}</span></div>` : ""}<div class="flex items-center justify-between"><span class="font-semibold">${t("cartTotal")}</span><span class="text-lg font-bold text-primary">${money(tt.total)}</span></div></div></div>`;
     return dialog("cart", `${C.dialog} max-h-[90vh] overflow-y-auto`,
       header(`${icon("shopping-cart", "h-5 w-5 text-primary")}<span>${t("cartTitle")}</span>${n > 0 ? `<span class="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">${n}</span>` : ""}`, "flex items-center gap-2") +
       body +
@@ -565,7 +567,7 @@
       (del ? `<div><label class="${C.label} mb-2 block">${t("deliveryZone")}</label><div role="radiogroup" dir="${dir()}" class="grid gap-2 grid-cols-1">${ZONES.map((z) => `<label class="flex items-center justify-between gap-2 rounded-md border p-3 cursor-pointer ${co.zone === z.id ? "border-primary bg-primary/10" : ""}" data-act="radio" data-name="zone" data-value="${z.id}"><div class="flex items-center gap-2">${radio(co.zone === z.id, "zone", z.id)}<span>${esc(z.name)}</span></div><span class="text-sm font-bold text-primary">${money(z.fee)}</span></label>`).join("")}</div></div>` : "") +
       (del ? `<div><label class="${C.label}" for="addr">${t("address")}</label><textarea class="${C.textarea}" id="addr" data-field="address"${miss("address")}>${esc(co.address)}</textarea>${err("address")}</div>` : "") +
       `<div><label class="${C.label}" for="notes">${t("notes")}</label><textarea class="${C.textarea}" id="notes" data-field="notes">${esc(co.notes)}</textarea></div>` +
-      `<div class="border-t pt-3 space-y-1 text-sm"><div class="flex items-center justify-between"><span class="text-muted-foreground">${t("cartSubtotal")}</span><span>${money(cartSubtotal())}</span></div>${dealRows("flex items-center justify-between text-primary")}${tt.discount_percent > 0 ? `<div class="flex items-center justify-between text-primary"><span>خصم المنيو ${tt.discount_percent}٪</span><span>-${money(tt.discount_amount)}</span></div>` : ""}${del ? `<div class="flex items-center justify-between"><span class="text-muted-foreground">${t("deliveryFee")}</span><span>${money(deliveryFee())}</span></div>` : ""}<div class="flex items-center justify-between pt-1 border-t"><span class="font-semibold">${t("cartTotal")}</span><span class="text-lg font-bold text-primary">${money(tt.total)}</span></div></div>` +
+      `<div class="border-t pt-3 space-y-1 text-sm"><div class="flex items-center justify-between"><span class="text-muted-foreground">${t("cartSubtotal")}</span><span>${money(cartSubtotal())}</span></div>${dealRows("flex items-center justify-between text-primary")}${tt.discount_percent > 0 ? `<div class="flex items-center justify-between text-primary"><span>${t("menuDiscount")} ${tt.discount_percent}٪</span><span>-${money(tt.discount_amount)}</span></div>` : ""}${del ? `<div class="flex items-center justify-between"><span class="text-muted-foreground">${t("deliveryFee")}</span><span>${money(deliveryFee())}</span></div>` : ""}<div class="flex items-center justify-between pt-1 border-t"><span class="font-semibold">${t("cartTotal")}</span><span class="text-lg font-bold text-primary">${money(tt.total)}</span></div></div>` +
       `</div>` +
       `<div class="${C.dialogFooter}"><button class="${C.btnOutline}" data-act="close-dialog" data-dlg="checkout">${t("back")}</button><button class="${C.btnWhatsApp}" data-act="preview" id="preview-btn">${icon("message-circle", "h-4 w-4")}${t("previewMessage")}</button></div>`,
       ` dir="${dir()}"`);
@@ -588,7 +590,7 @@
     const customer = [`👤 ${t("waCustomer")}`, `• ${t("waName")}: ${co.name}`, `• ${t("waPhone")}: ${normPhone(co.phone) ?? co.phone}`, `• ${t("waOrderType")}: ${mode}`,
       del ? `• ${t("waZone")}: ${zone}` : null, del ? `• ${t("waAddress")}: ${co.address}` : null, co.notes ? `• ${t("waNotes")}: ${co.notes}` : null].filter(Boolean).join("\n");
     const order = [`🍕 ${t("waOrder")} (${count} ${t("waItems")})`, items.join("\n")].join("\n");
-    const sums = [`• ${t("waSubtotal")}: ${money(cartSubtotal())}`, ...pizzaDeals().map((d) => `• ${dealLabel(d)}: -${money(d.amount)}`), tt.discount_percent > 0 ? `• خصم المنيو ${tt.discount_percent}٪: -${money(tt.discount_amount)}` : null,
+    const sums = [`• ${t("waSubtotal")}: ${money(cartSubtotal())}`, ...pizzaDeals().map((d) => `• ${dealLabel(d)}: -${money(d.amount)}`), tt.discount_percent > 0 ? `• ${t("menuDiscount")} ${tt.discount_percent}٪: -${money(tt.discount_amount)}` : null,
       del ? `• ${t("waDeliveryFee")}: ${money(deliveryFee())}` : null, `• 💰 ${t("waGrandTotal")}: ${money(tt.total)}`].filter(Boolean).join("\n");
     return [`🌟 ${t("waNewOrder")}`, `🗓 ${when}`, line, customer, line, order, line, sums, "", `${t("waThankYou")} 🙏`].join("\n");
   }
@@ -599,7 +601,7 @@
       header(t("previewTitle")) +
       `<p class="text-xs text-muted-foreground">${t(del ? "previewHint" : "previewHintNameOnly")}</p>` +
       `<div class="grid gap-3 sm:grid-cols-2"><div><label class="${C.label}" for="p-name">${t("name")}</label><input class="${C.input}" id="p-name" data-pfield="name" value="${esc(S.co.name)}"></div>${del ? `<div><label class="${C.label}" for="p-addr">${t("address")}</label><input class="${C.input}" id="p-addr" data-pfield="address" value="${esc(S.co.address)}"></div>` : ""}</div>` +
-      `<div><label class="${C.label}" for="p-msg">${S.lang === "ar" ? "نص الرسالة" : "Message text"}</label><textarea class="${C.textareaMono}" id="p-msg">${esc(S.preview)}</textarea></div>` +
+      `<div><label class="${C.label}" for="p-msg">${t("messageText")}</label><textarea class="${C.textareaMono}" id="p-msg">${esc(S.preview)}</textarea></div>` +
       `<div class="${C.dialogFooter}"><button class="${C.btnOutline}" data-act="close-dialog" data-dlg="preview">${t("editData")}</button><button class="${C.btnWhatsApp}" data-act="send"${S.sending ? " disabled" : ""}>${icon("message-circle", "h-4 w-4")}${t("sendWhatsApp")}</button></div>`,
       ` dir="${dir()}"`);
   }
@@ -624,12 +626,36 @@
     if (S.sentCheck) html += sentDialog();
     if (closedOpen()) html += closedDialog();   // last = on top, so it is never hidden behind another window
     const portal = $("portal");
+    // Nothing changed (e.g. the 15-second clock check): leave the open window alone
+    if (html === renderPortal.last) return;
+    renderPortal.last = html;
     const scrollers = {};
     portal.querySelectorAll("[data-dlg][role=dialog]").forEach((d) => { scrollers[d.dataset.dlg] = d.scrollTop; });
     portal.innerHTML = html;
-    portal.querySelectorAll("[data-dlg][role=dialog]").forEach((d) => { if (scrollers[d.dataset.dlg]) d.scrollTop = scrollers[d.dataset.dlg]; });
+    // A window that was already open is only updated: no second opening animation, same scroll position
+    portal.querySelectorAll("[data-dlg][role=dialog]").forEach((d) => {
+      const key = d.dataset.dlg;
+      if (!(key in scrollers)) return;
+      d.dataset.settled = "";
+      portal.querySelector(`[data-dlg-overlay="${key}"]`)?.setAttribute("data-settled", "");
+      d.scrollTop = scrollers[key];
+    });
     document.body.style.overflow = html ? "hidden" : "";
+    syncHeroVideo();
     syncHistory(portal.querySelectorAll("[role=dialog]").length);
+  }
+
+  // The hero video pauses while a window is open or the hero is off screen, so phones have power left for smooth animation and scrolling
+  let heroVisible = true;
+  function syncHeroVideo() {
+    const v = document.querySelector(".hero video");
+    if (!v) return;
+    const shouldPlay = heroVisible && !$("portal").querySelector("[role=dialog]");
+    if (shouldPlay && v.paused) v.play().catch(() => { /* autoplay blocked (e.g. Low Power Mode): the poster stays */ });
+    else if (!shouldPlay && !v.paused) v.pause();
+  }
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(([e]) => { heroVisible = e.isIntersecting; syncHeroVideo(); }).observe(document.querySelector(".hero"));
   }
 
   // Phone back button: closes the open window instead of leaving the menu.
@@ -646,6 +672,11 @@
     histDepth = Math.max(0, histDepth - 1);
     closeDialog(key);
   });
+
+const topDialogKey = () => {
+    const all = $("portal").querySelectorAll('[role=dialog][data-state="open"]');
+    return all[all.length - 1]?.dataset.dlg;
+  };
 
   function openDialog(fn) {
     fn();
@@ -672,13 +703,8 @@
     if (!content) return finish();
     content.dataset.state = "closed";
     if (overlay) overlay.dataset.state = "closed";
-    setTimeout(finish, 180);
+    setTimeout(finish, 200);   // same length as the closing animation, so it isn't cut short
   }
-
-  const topDialogKey = () => {
-    const all = $("portal").querySelectorAll('[role=dialog][data-state="open"]');
-    return all[all.length - 1]?.dataset.dlg;
-  };
 
   /* ---------- Events ---------- */
 
@@ -827,7 +853,7 @@
   setInterval(tick, 15000);
   window.addEventListener("focus", tick);
 
-  /* ---------- Boot ---------- */
+  /* ---------- Start-up ---------- */
   // Category tabs stick directly under the header: expose the header's live height as a CSS variable
   const headerObserver = new ResizeObserver(([entry]) => {
     document.documentElement.style.setProperty("--header-height", `${entry.target.offsetHeight}px`);
@@ -835,9 +861,10 @@
   headerObserver.observe($("site-header"));
 
   function renderAll() {
-    document.documentElement.dir = S.lang === "ar" ? "rtl" : "ltr";
+    document.documentElement.dir = dir();
     document.documentElement.lang = S.lang;
-    $("app").dir = S.lang === "ar" ? "rtl" : "ltr";
+    document.title = t("seoTitle");
+    $("app").dir = dir();
     renderHeroExtras();
     renderBrand();
     renderNav();
@@ -849,7 +876,25 @@
     renderPortal();
   }
 
-  document.title = T.brandName.ar + " - قائمة الطلب";
+  // Menu for Google: built from menu-data.js so names and prices always match what customers see
+  (function addMenuSchema() {
+    const price = (p) => ({ "@type": "Offer", price: Number(p).toFixed(2), priceCurrency: "JOD" });
+    const item = (x, p = x.price) => ({ "@type": "MenuItem", name: x.name, ...(x.nameEn ? { alternateName: x.nameEn } : {}), ...(x.desc ? { description: x.desc } : {}), offers: price(p) });
+    const section = (name, items) => ({ "@type": "MenuSection", name, hasMenuItem: items });
+    const live = (list) => list.filter((x) => !S.hidden.has(x.id));
+    const sections = [
+      section(T.sectionOffers.ar, live(M.OFFERS).map((o) => item(o))),
+      section(T.sectionPizza.ar, live(M.PIZZA_SIZES).map((z) => ({ "@type": "MenuItem", name: `بيتزا ${SIZE_LABEL[z.id].ar}`, description: live(M.PIZZA_TYPES).map((p) => p.name).join("، "), offers: price(z.price) }))),
+      section(T.sectionManakish.ar, live(M.MANAQEESH).map((x) => item(x))),
+      section(T.sectionCalzone.ar, live(M.KALZONI).map((x) => item(x))),
+      section(T.sectionShami.ar, live(M.MOAJANAT).map((x) => item(x))),
+      section(T.sectionDrinks.ar, live(M.DRINKS).map((x) => item(x)))
+    ].filter((sec) => sec.hasMenuItem.length);
+    const el = document.createElement("script");
+    el.type = "application/ld+json";
+    el.textContent = JSON.stringify({ "@context": "https://schema.org", "@type": "Menu", "@id": "https://nouralhana.com/#menu", name: "منيو بيتزا نور الهنا", inLanguage: "ar", hasMenuSection: sections });
+    document.head.appendChild(el);
+  })();
   loadSaved();   // bring back the cart and the customer's details from this phone
   // Offline support: the menu opens even without internet (only on the real website — service workers don't run from a file)
   if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {

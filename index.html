@@ -3,16 +3,64 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>بيتزا نور الهنا - قائمة الطلب</title>
+  <title>بيتزا نور الهنا | بيتزا ومناقيش ومعجنات في ضاحية الرشيد، عمّان</title>
+  <meta name="description" content="منيو بيتزا نور الهنا في ضاحية الرشيد، عمّان: بيتزا، كالزوني، مناقيش ومعجنات شامية بأسعار واضحة وعروض 3 بيتزا. اطلب مباشرة عبر واتساب مع توصيل.">
   <meta name="author" content="Pizza Nour El Hana">
-  <meta name="theme-color" content="#d97706">
-  <meta name="description" content="قائمة بيتزا نور الهنا الرقمية - بيتزا، كالزوني، مناقيش، ومعجنات. اطلب مباشرة عبر واتساب.">
-  <meta property="og:title" content="بيتزا نور الهنا">
-  <meta property="og:description" content="اطلب البيتزا والمناقيش مباشرة عبر واتساب">
-  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#c04500">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <!-- The restaurant's own domain is the main address; copies elsewhere (previews) point search engines to it -->
+  <link rel="canonical" href="https://nouralhana.com/">
+  <!-- Link previews (WhatsApp, Facebook, Instagram, X) -->
+  <meta property="og:type" content="restaurant.restaurant">
+  <meta property="og:site_name" content="بيتزا نور الهنا">
+  <meta property="og:title" content="بيتزا نور الهنا | منيو واطلب عبر واتساب">
+  <meta property="og:description" content="بيتزا، كالزوني، مناقيش ومعجنات شامية في ضاحية الرشيد، عمّان. اطلب مباشرة عبر واتساب.">
+  <meta property="og:url" content="https://nouralhana.com/">
+  <meta property="og:locale" content="ar_JO">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:image" content="https://nouralhana.com/assets/images/og-share.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="شعار بيتزا نور الهنا — بيتزا، كالزوني، مناقيش ومعجنات">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="منيو بيتزا نور الهنا | Pizza Nour El Hana">
-  <meta name="twitter:description" content="اطلب مباشرة عبر المنيو الإلكتروني واتساب.">
+  <meta name="twitter:title" content="بيتزا نور الهنا | منيو واطلب عبر واتساب">
+  <meta name="twitter:description" content="بيتزا، كالزوني، مناقيش ومعجنات شامية في ضاحية الرشيد، عمّان. اطلب مباشرة عبر واتساب.">
+  <meta name="twitter:image" content="https://nouralhana.com/assets/images/og-share.jpg">
+  <!-- Business details for Google (Search, Maps, rich results). The menu itself is added by app.js from menu-data.js, so prices stay in one place. -->
+  <script type="application/ld+json" id="ld-restaurant">
+  {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    "@id": "https://nouralhana.com/#restaurant",
+    "name": "بيتزا نور الهنا",
+    "alternateName": ["Pizza Nour El Hana", "Noor AlHana Pastries"],
+    "url": "https://nouralhana.com/",
+    "logo": "https://nouralhana.com/assets/images/logo.jpg",
+    "image": "https://nouralhana.com/assets/images/og-share.jpg",
+    "telephone": "+962799371612",
+    "priceRange": "$",
+    "currenciesAccepted": "JOD",
+    "servesCuisine": ["Pizza", "Manakish", "Levantine pastries", "Calzone"],
+    "acceptsReservations": false,
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "ضاحية الرشيد، مقابل مدارس الريادة",
+      "addressLocality": "عمّان",
+      "addressCountry": "JO"
+    },
+    "geo": { "@type": "GeoCoordinates", "latitude": 32.0156828, "longitude": 35.8819082 },
+    "hasMap": "https://www.google.com/maps/search/?api=1&query=Noor%20AlHana%20Pastries&query_place_id=ChIJO3i09VefHBURC3CDyGA68Jk",
+    "openingHoursSpecification": [
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"], "opens": "09:30", "closes": "22:00" },
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": "Friday", "opens": "10:00", "closes": "15:00" }
+    ],
+    "sameAs": [
+      "https://www.instagram.com/pizzanuralhuna",
+      "https://www.facebook.com/share/1D9UgEW6wP/"
+    ],
+    "hasMenu": { "@id": "https://nouralhana.com/#menu" }
+  }
+  </script>
   <link rel="icon" href="assets/icons/favicon.png" type="image/png">
   <link rel="icon" href="assets/icons/icon-192x192.png" type="image/png" sizes="192x192">
   <link rel="icon" href="assets/icons/icon-512x512.png" type="image/png" sizes="512x512">
@@ -22,7 +70,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Outfit:wght@400;600;700;900&display=swap">
   <link rel="stylesheet" href="assets/tokens/tokens.css">
-  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/tailwind.css">
+  <link rel="stylesheet" href="assets/css/components.css">
 </head>
 <body>
   <div id="progress" class="progress-bar" style="transform:scaleX(0)" aria-hidden="true"></div>
@@ -33,12 +82,12 @@
 
     <!-- Header (top of page, always visible): logo · search · language -->
     <header id="site-header" class="site-header">
-      <div id="nav" class="page-container py-3"><div class="skel-header" aria-hidden="true"><div class="skel skel--logo"></div><div class="skel skel--search"></div><div class="skel skel--lang"></div></div></div>
+      <div id="nav" class="page-container py-2"><div class="skel-header" aria-hidden="true"><div class="skel skel--logo"></div><div class="skel skel--search"></div><div class="skel skel--lang"></div></div></div>
     </header>
 
     <!-- Hero -->
     <div class="hero">
-      <video src="assets/video/hero.mp4" autoplay muted loop playsinline class="absolute inset-0 h-full w-full object-cover"></video>
+      <video src="assets/video/hero.mp4" poster="assets/images/hero-poster.jpg" autoplay muted loop playsinline preload="auto" class="absolute inset-0 h-full w-full object-cover"></video>
       <div class="hero-scrim"></div>
       <div id="hero-content" class="hero-content"></div>
     </div>
@@ -58,6 +107,14 @@
   </div>
 
   <div id="portal"></div>
+  <noscript>
+    <div style="padding:24px;text-align:center;font-family:sans-serif">
+      <h1>بيتزا نور الهنا</h1>
+      <p>بيتزا، كالزوني، مناقيش ومعجنات شامية — ضاحية الرشيد، مقابل مدارس الريادة، عمّان</p>
+      <p>للطلب: <a href="tel:+962799371612">0799371612</a> · <a href="https://wa.me/962799371612">واتساب</a></p>
+      <p>يرجى تفعيل JavaScript لعرض المنيو.</p>
+    </div>
+  </noscript>
 
   <script src="assets/js/i18n.js"></script>
   <script src="assets/js/menu-data.js"></script>
